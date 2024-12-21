@@ -1,7 +1,8 @@
 #version 300 es
 precision highp float;
 
-const int LIGHT_COUNT=64;
+const int LIGHT_COUNT=16; //ensures unifrom count is less than WebGL min
+const int SHADOWED_LIGHT_COUNT = 16; //1 light for each shadow map. Might want to perform shadows in supplementary stage.
 const int MAT_PROP_COUNT=7;
 const float ATTENUATION_DROPOFF=.01;
 in vec2 texCoord;
@@ -27,8 +28,14 @@ layout(location=5) out vec4 fDiffuse; //surface diffuse multiply
 layout(location=6) out vec4 fSpecular; //surface specular multiply
 layout(location=7) out vec4 fEmissive; //surface emissive color
 //attribute int matIndex; //default = 0, constant values; 1 = texture, constant values; -1 = unlit solid color
+
+//STRUCT SIZE: 
+//Currently: 10?
+//Optimized: 6
 struct light
 {
+	//lowp vec3 TypeNegHandlNegHandlAlt
+	//vec3 AngleAttenShini
 	lowp int type;//0=empty (default),  1=ambient, 2=directional, 3=point, 4=spot
 	vec3 locationW, directionW;//direction ignored if not spotlight; location ignored if ambient or directional
 	float angle;//spotlight only
