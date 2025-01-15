@@ -1,5 +1,7 @@
 "use strict";
 
+import Q from "engine.js"
+
 class _AmbientLight extends _Primitive{
     _color;
     _lightmask;

@@ -1,5 +1,7 @@
 "use strict";
 
+import * as MV from "MVnew.js"
+import Q from "../engine.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
 //Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays in globals.js _fisqrt
@@ -25,32 +27,32 @@ function fastNorm(u, excludeLastComponent) {
     switch (u.type) {
       case 'vec2':
         var len = _qSqrt(u[0] * u[0] + u[1] * u[1]);
-        var result = vec2(u[0] * len, u[1] * len);
+        var result = MV.vec2(u[0] * len, u[1] * len);
         return result;
         break;
       case 'vec3':
         if (excludeLastComponent) {
           var len = _qSqrt(u[0] * u[0] + u[1] * u[1]);
-          var result = vec3(u[0] * len, u[1] * len, u[2]);
+          var result = MV.vec3(u[0] * len, u[1] * len, u[2]);
           return result;
           break;
         }
         else {
           var len = _qSqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
-          var result = vec3(u[0] * len, u[1] * len, u[2] * len);
+          var result = MV.vec3(u[0] * len, u[1] * len, u[2] * len);
           return result;
           break;
         }
       case 'vec4':
         if (excludeLastComponent) {
           var len = _qSqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
-          var result = vec4(u[0] * len, u[1] * len, u[2] * len, u[3]);
+          var result = MV.vec4(u[0] * len, u[1] * len, u[2] * len, u[3]);
           return result;
           break;
         }
         else {
           var len = _qSqrt(u[0] * u[0] + u[1] * u[1] + u[2] * u[2] + u[3] * u[3]);
-          var result = vec4(u[0] * len, u[1] * len, u[2] * len, u[3] * len);
+          var result = MV.vec4(u[0] * len, u[1] * len, u[2] * len, u[3] * len);
           return result;
           break;
         }
@@ -69,18 +71,18 @@ function clamp(num, min, max) {
  * @param {Quaternion} quat1 
  * @param {Quaternion} quat2 
  */
-function quatMult(quat1, quat2) {
+function quatmult(quat1, quat2) {
     var w1 = quat1.w, w2 = quat2.w;
-    var v1 = vec3(quat1.x, quat1.y, quat1.z), v2 = vec3(quat2.x, quat2.y, quat2.z)
+    var v1 = MV.vec3(quat1.x, quat1.y, quat1.z), v2 = MV.vec3(quat2.x, quat2.y, quat2.z)
 
     var wn = w1 * w2 - (dot(v1, v2))
-    var vn = (add(add(cross(v1, v2), mult(w1, v2)), mult(w2, v1)))
+    var vn = (MV.add(MV.add(MV.cross(v1, v2), MV.mult(w1, v2)), MV.mult(w2, v1)))
 
     return Quaternion(wn, vn[0], vn[1], vn[2])
 }
 
 /**
- * normalizes Quaternion just like a normal vector
+ * normalizes Quaternion just like a normal MV.vector
  * @param {*} q 
  */
 function quatNorm(q) {
@@ -103,7 +105,7 @@ function quatEqual(q1, q2) {
  */
 function eulerToQuat(axis, angle, normFunction = normalize) {
     if (length(axis) == 0) throw "Undefined axis (0,0,0)"
-    var a = mult(axis, vec3(1, -1, 1))
+    var a = MV.mult(axis, MV.vec3(1, -1, 1))
     var c = Math.cos(radians(angle % 360) / 2)
     var s = Math.sin(radians(angle % 360) / 2)
     var n = normFunction(a)
@@ -112,16 +114,16 @@ function eulerToQuat(axis, angle, normFunction = normalize) {
 
 
 /**
- * converts Quaternion (w, x, y, z) to mat4 for rotation
+ * converts Quaternion (w, x, y, z) to MV.mat4 for rotation
  * @param {*} rot 
  */
-function quatToMat4(rot) {
+function quatTomat4(rot) {
     var v = quatNorm(rot)
     var qw = v.w
     var qx = v.x
     var qy = v.y
     var qz = v.z
-    return mat4(
+    return MV.mat4(
         1 - 2 * (qy * qy + qz * qz), 2 * (qx * qy - qz * qw), 2 * (qx * qz + qy * qw), 0,
         2 * (qx * qy + qz * qw), 1 - 2 * (qx * qx + qz * qz), 2 * (qy * qz - qx * qw), 0,
         2 * (qx * qz - qy * qw), 2 * (qy * qz + qx * qw), 1 - 2 * (qx * qx + qy * qy), 0,
@@ -129,16 +131,16 @@ function quatToMat4(rot) {
 }
 
 /**
- * converts Quaternion to mat3 for rotation
+ * converts Quaternion to MV.mat3 for rotation
  * @param {*} rot 
  */
-function quatToMat3(rot) {
+function quatTomat3(rot) {
     var v = quatNorm(rot)
     var qw = v.w
     var qx = v.x
     var qy = v.y
     var qz = v.z
-    return mat3(
+    return MV.mat3(
         1 - 2 * (qy * qy + qz * qz), 2 * (qx * qy - qz * qw), 2 * (qx * qz + qy * qw),
         2 * (qx * qy + qz * qw), 1 - 2 * (qx * qx + qz * qz), 2 * (qy * qz - qx * qw),
         2 * (qx * qz - qy * qw), 2 * (qy * qz + qx * qw), 1 - 2 * (qx * qx + qy * qy)
@@ -183,10 +185,10 @@ function matToQuat(mat) {
 }
 
 function mat4ToTransform(m) {
-    var pos = vec3(m[0][3], m[1][3], m[2][3])
-    var scl = vec3(length(vec3(m[0][0], m[0][1], m[0][2])),
-        length(vec3(m[1][0], m[1][1], m[1][2])),
-        length(vec3(m[2][0], m[2][1], m[2][2])))
+    var pos = MV.vec3(m[0][3], m[1][3], m[2][3])
+    var scl = MV.vec3(length(MV.vec3(m[0][0], m[0][1], m[0][2])),
+        length(MV.vec3(m[1][0], m[1][1], m[1][2])),
+        length(MV.vec3(m[2][0], m[2][1], m[2][2])))
     var rot = matToQuat(m)
 
     return { pos: pos, scl: scl, rot: rot }
@@ -204,43 +206,43 @@ function quaternionToEuler(quat) {
     var roll = ((Math.atan2(2 * (quat.w * quat.x + quat.y * quat.z), (1 - (2 * (quat.x * quat.x + quat.y * quat.y))))) / (2 * Math.PI)) * 360.0
     var pitch = ((Math.asin(2 * (quat.w * quat.y - quat.z * quat.x))) / (2 * Math.PI)) * 360.0
     var yaw = ((Math.atan2(2 * (quat.w * quat.z + quat.y * quat.x), (1 - (2 * (quat.y * quat.y + quat.z * quat.z))))) / (2 * Math.PI)) * 360.0
-    return vec3(roll, pitch, yaw)
+    return MV.vec3(roll, pitch, yaw)
 }
 
 /**
- * rotates vec3 about a quaternion
+ * rotates MV.vec3 about a quaternion
  */
 function rotateAbout(vec, quat) {
     var p = Quaternion(0, vec[0], vec[1], vec[2])
     var rp = Quaternion(quat.w, -quat.x, -quat.y, -quat.z)
-    var e = quatMult(quatMult(quat, p), rp)
+    var e = quatMV.mult(quatMV.mult(quat, p), rp)
     //(e)
-    return vec3(e.x, e.y, e.z)
+    return MV.vec3(e.x, e.y, e.z)
 }
 
 /**
- * return forward vector of a quaternion (w, x, y, z)
+ * return forward MV.vector of a quaternion (w, x, y, z)
  * This is just the 3rd column of the rotation matrix, but I am not using that to avoid using a loop
  * @param {*} rot quaternion
  */
 function forward(rot) {
-    return rotateAbout(vec3(0, 0, 1), rot)
+    return rotateAbout(MV.vec3(0, 0, 1), rot)
 }
 
 /**
- * return up vector of a quaternion (w, x, y, z)
+ * return up MV.vector of a quaternion (w, x, y, z)
  * @param {*} rot 
  */
 function up(rot) {
-    return rotateAbout(vec3(0, 1, 0), rot)
+    return rotateAbout(MV.vec3(0, 1, 0), rot)
 }
 
 /**
- * return right vector of a quaternion (w, x, y, z)
+ * return right MV.vector of a quaternion (w, x, y, z)
  * @param {*} rot 
  */
 function right(rot) {
-    return rotateAbout(vec3(1, 0, 0), rot)
+    return rotateAbout(MV.vec3(1, 0, 0), rot)
 }
 
 /**
@@ -249,8 +251,8 @@ function right(rot) {
  * @param {quaternion} deltaRot 
  */
 function addRotation(initRot, deltaRot) {
-    //(quatMult(deltaRot, initRot))
-    return quatMult(deltaRot, initRot)
+    //(quatMV.mult(deltaRot, initRot))
+    return quatMV.mult(deltaRot, initRot)
 }
 
 /**
@@ -260,78 +262,78 @@ function addRotation(initRot, deltaRot) {
 function getMidpoint(points) {
 
     if (arguments.length == 1) return arguments[0]
-    if (arguments.length == 2) return mult(.5, add(arguments[0], arguments[1]))
-    if (arguments.length == 3) return mult(.3333, add(add(arguments[0], arguments[1]), arguments[2]))
-    if (arguments.length == 4) return mult(.25, add(add(arguments[0], arguments[1]), add(arguments[2], arguments[3])))
+    if (arguments.length == 2) return MV.mult(.5, MV.add(arguments[0], arguments[1]))
+    if (arguments.length == 3) return MV.mult(.3333, MV.add(MV.add(arguments[0], arguments[1]), arguments[2]))
+    if (arguments.length == 4) return MV.mult(.25, MV.add(MV.add(arguments[0], arguments[1]), MV.add(arguments[2], arguments[3])))
     throw "Function only supports list of length 1-4"
 }
 
 /**
- * Returns a 4-vector representation of a plane- (x, y, z, b)
+ * Returns a 4-MV.vector representation of a plane- (x, y, z, b)
  * @param {*} points 3 points
  */
 function getPlane(points, normFunction = normalize) {
     if (points.length == 3) {
-        var cp = cross(subtract(points[2], points[0]), subtract(points[1], points[0]))
-        var d = dot(cp, points[2])
-        return normFunction(vec4(cp[0], cp[1], cp[2], d))
+        var cp = MV.cross(MV.subtract(points[2], points[0]), MV.subtract(points[1], points[0]))
+        var d = MV.dot(cp, points[2])
+        return normFunction(MV.vec4(cp[0], cp[1], cp[2], d))
     }
     throw "Can only get plane intersecting 3 points."
 }
 
 /**
- * Returns intersection info regarding the intersection between a vec4 plane and a vec3 line
- * @param {*} plane vec4 plane (x, y, z, b) normalized
- * @param {*} line vec3 line array consisting of 2 endpoints
+ * Returns intersection info regarding the intersection between a MV.vec4 plane and a MV.vec3 line
+ * @param {*} plane MV.vec4 plane (x, y, z, b) normalized
+ * @param {*} line MV.vec3 line array consisting of 2 endpoints
  * via https://stackoverflow.com/questions/5666222/3d-line-plane-intersection
  */
 function linearIntersect(plane, line) {
     if (line.length != 2) throw "Can't make a line without 2 points"
-    var plane3 = vec3(plane[0], plane[1], plane[2])
-    var u = subtract(line[1], line[0])
-    var d = dot(plane3, u)
+    var plane3 = MV.vec3(plane[0], plane[1], plane[2])
+    var u = MV.subtract(line[1], line[0])
+    var d = MV.dot(plane3, u)
 
-    if (dot != 0) {
-        var tmp = mult(-plane[3], plane3)
-        tmp = subtract(line[0], tmp)
-        tmp = -dot(plane3, tmp) / d
-        u = mult(tmp, u)
-        return add(line[0], u)
+    if (MV.dot != 0) {
+        var tmp = MV.mult(-plane[3], plane3)
+        tmp = MV.subtract(line[0], tmp)
+        tmp = -MV.dot(plane3, tmp) / d
+        u = MV.mult(tmp, u)
+        return MV.add(line[0], u)
     }
     else return null
 
 }
 
-/**this should be in mvnew.js */
+/**this should be in MVnew.js */
 function vec4to3(v4) {
-    return vec3(v4[0], v4[1], v4[2])
+    return MV.vec3(v4[0], v4[1], v4[2])
 }
 
-/**this should be in mvnew.js */
+/**this should be in MVnew.js */
 function vec3to4(v3) {
-    return vec4(v3[0], v3[1], v3[2], 1)
+    return MV.vec4(v3[0], v3[1], v3[2], 1)
 }
 
 function bin2dec(bin) {
     return parseInt(bin, 2).toString(10);
 }
 
-function normalsFromTriangleVerts(v, i, normFunction = normalize) {
+function normalsFromTriangleVerts(v, i, normFunction = MV.normalize) {
     var r = []
     for (var x = 0; x < i.length; x += 3) {
-        var c = normFunction(cross(subtract(v[i[x + 1]], v[i[x]]), subtract(v[i[x + 2]], v[i[x]])))
+        var c = normFunction(MV.cross(MV.subtract(v[i[x + 1]], v[i[x]]), MV.subtract(v[i[x + 2]], v[i[x]])))
         r.push(c)
     }
     return r
 }
 
-function tanFromTriangleVerts(v, i, t, normFunction = normalize) {
+function tanFromTriangleVerts(v, i, t, normFunction = MV.normalize) {
     var r = []
     for (var x = 0; x < i.length; x += 3) {
-        var e1 = subtract(v[i[x + 1]], v[i[x]]), e2 = subtract(v[i[x + 2]], v[i[x]]) //vec3
-        var t1 = subtract(t[x+1], t[x]), t2 = subtract(t[x+2], t[x]) //vec2
+        var e1 = MV.subtract(v[i[x + 1]], v[i[x]]), e2 = MV.subtract(v[i[x + 2]], v[i[x]]) //MV.vec3
+        var t1 = MV.subtract(t[x+1], t[x]), t2 = MV.subtract(t[x+2], t[x]) //MV.vec2
         var f = 1.0 / ((t1[0]* t2[1])-(t2[0]*t1[1]))
-        r.push(normFunction(mult(f, subtract(mult(t2[1], e1), mult(t1[1], e2)))))
+        r.push(normFunction(MV.mult(f, MV.subtract(MV.mult(t2[1], e1), MV.mult(t1[1], e2)))))
         
     }
     return r
@@ -343,14 +345,14 @@ function tanFromTriangleVerts(v, i, t, normFunction = normalize) {
 function _flipTexCoords(r){
     var e = []
     for(var i = 0; i < r.length; i++){
-        e.push(vec2(r[i][1], r[i][0]))
+        e.push(MV.vec2(r[i][1], r[i][0]))
     }
     return e
 }
 
 ///////////////////////////////////////////////////
 
-function _newID() { return _id++ }
+function _newID() { return Q._id++ }
 
 
 function _DrawInfo(pointIndex, matIndex, texCoords, normals, tangents, textureIndex = -1, type=_gl.TRIANGLES, bufferMask = 0x1, cameraMask = 0x1, lightMask = 0x1){
@@ -358,6 +360,6 @@ function _DrawInfo(pointIndex, matIndex, texCoords, normals, tangents, textureIn
         bufferMask: bufferMask, cameraMask: cameraMask, lightMask: lightMask}
 }
 
-function _Transform(pos=vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=vec3(1,1,1)){
+function _Transform(pos=MV.vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=MV.vec3(1,1,1)){
     return {pos: pos, rot: rot, scl: scl}
 }

@@ -5,7 +5,10 @@
 //  MV.js
 //
 //////////////////////////////////////////////////////////////////////////////
+//File initially obtained from classwork/lecture materail. Unknown origin but
+//can be sourced from public repos elsewhere online.
 
+//Contains some added functionality to assist with the QEngine.
 //----------------------------------------------------------------------------
 
 //
