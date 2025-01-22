@@ -94,7 +94,7 @@ export class Engine {
 	}
 
 	_postTickFunction(delta, time) {
-		_userPostTickFunction(delta, time)
+		this._userPostTickFunction(delta, time)
 		getLights().forEach((o) => (o._postTick(delta, time)))
 		getObjects().forEach((o) => (o._postTick(delta, time)))
 		getCameras().forEach((o) => (o._postTick(delta, time)))
@@ -174,6 +174,8 @@ export class Engine {
 	engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
 		defaultPostVertex = "../default-shaders/postprocess-vertex.glsl", defaultPostFragment = "../default-shaders/postprocess-fragment.glsl", userPostTick = function (delta, time) { }) {
 		this._userPostTickFunction = userPostTick;
+		this._userTickFunction = userTick;
+		this._userInitFunction = userInit;
 		_initInputs(userKey, userMouse)
 		this._initDefaultGraphics(defaultCanvas, defaultVertex, defaultFragment, defaultPostVertex, defaultPostFragment)
 			.then(() => {
