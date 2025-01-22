@@ -85,7 +85,7 @@ export class Engine {
 		for (var i = 0; i < ScreenBuffer.getBuffers().length; i++)
 			ScreenBuffer.getBuffers()[i]._applyPostProcessToScene();
 
-		this._requestId = requestAnimationFrame(this._render);
+		this._requestId = requestAnimationFrame(this._render).bind(this);
 	}
 
 	_queueNewTick(f) {
@@ -139,7 +139,7 @@ export class Engine {
 
 		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram, new vec2(this.canvas.width, this.canvas.height));
 
-		this._mainCamera = new Camera(this._bData);
+		this.mainCamera = new Camera(this._bData);
 
 		this._coords = new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, [{
 			pointIndex: [0, 1, 2, 3, 4, 5], matIndex: [0, 0, 1, 1, 2, 2], texCoords: [vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1)], type: this._gl.LINES,
@@ -192,7 +192,7 @@ export class Engine {
 				this._userInitFunction();
 				setTimeout(function () {
 					this._queueNewTick(this._tick);
-				}, 100);
+				}.bind(this), 100);
 				this._gl.flush();
 				this._render();
 
