@@ -68,7 +68,7 @@ class engine {
 		this._fisqrt.i = new Int32Array( this._fisqrt.y.buffer )
 	}
 
-	function _render(time) {
+	_render(time) {
 		for (var i = 0; i < this._buffers.length; i++)
 			this._buffers[i]._beginRender();
 		for (var i = 0; i < this._cameras.length; i++)
@@ -79,18 +79,18 @@ class engine {
 		this._requestId = requestAnimationFrame(this._render);
 	}
 
-	function _queueNewTick(f) {
+	_queueNewTick(f) {
 		setTimeout(f, 1, Date.now());
 	}
 
-	function _postTickFunction(delta, time) {
+	_postTickFunction(delta, time) {
 		_userPostTickFunction(delta, time)
 		Lights.lights.forEach((o) => (o._postTick(delta, time)))
 		this.Objects.forEach((o) => (o._postTick(delta, time)))
 		Cameras.cameras.forEach((o) => (o._postTick(delta, time)))
 	}
 
-	function _tick(prevTime) {
+	_tick(prevTime) {
 		var delta = Date.now() - prevTime;
 		this._time += delta;
 		var l = this._keyBuffer.length
@@ -125,7 +125,7 @@ class engine {
 		this._queueNewTick(this._tick);
 	}
 
-	function _setDefaultGraphics(vertexPath, fragmentPath, postVertexPath, postFragmentPath) {
+	_setDefaultGraphics(vertexPath, fragmentPath, postVertexPath, postFragmentPath) {
 		//  Load shaders and initialize attribute buffers
 		this._defaultProgram = new ShaderProgram.shaderProgram(this._gl, vertexPath, fragmentPath);
 		this._postProcessProgram = new ShaderProgram.shaderProgram(this._gl, postVertexPath, postFragmentPath);
@@ -143,7 +143,7 @@ class engine {
 			[new Material._SolidColorNoLighting(vec4(1, 0, 0, 1)), new Material._SolidColorNoLighting(vec4(0, 1, 0, 1)), new Material._SolidColorNoLighting(vec4(0, 0, 1, 1))], this._bounds._RECT, [], true)
 	}
 f
-	async function _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
+	async _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
 		return new Promise((resolve, reject) => {
 
 			this.canvas = document.getElementById(defaultCanvas);
@@ -177,7 +177,7 @@ f
 	}
 
 	//Initializes the engine, run this function first and foremost to start ticking
-	function engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
+	engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
 		defaultPostVertex = "../default-shaders/postprocess-vertex.glsl", defaultPostFragment = "../default-shaders/postprocess-fragment.glsl", userPostTick = function (delta, time) { }) {
 		this._userInitFunction = userInit
 		this._userTickFunction = userTick;
