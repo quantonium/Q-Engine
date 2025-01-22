@@ -2,6 +2,8 @@
 
 import { vec4, vec2 } from "./common/MVnew.js";
 
+import { getLights } from "./primitives/lights.js";
+
 /**
  * An attribute location for a given buffer, mapping name to wgl location
  */
@@ -421,7 +423,7 @@ export class ScreenBuffer {
 		var x = -1
 		if (this._lightIndLoc.isValid) {
 			this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
-			_lights.forEach((l) => {
+			getLights().forEach((l) => {
 				if (l != null && x < _maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this._bufferMask) != 0)) {
 					x++;
 					this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
