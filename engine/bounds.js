@@ -62,9 +62,9 @@ export class Bounds {
 				}
 			}
 
-			this._pos = mult(.5, add(min, max))
+			this.pos = mult(.5, add(min, max))
 			//(this._pos)
-			this._extent = mult(.5, subtract(max, min));
+			this.extent = mult(.5, subtract(max, min));
 			if (this.type == Bounds.SPHERE) {
 				//get furthest point from points rendered
 
