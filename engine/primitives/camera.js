@@ -2,7 +2,7 @@
 
 import {Primitive} from "./primitive.js"
 import {SolidColorNoLighting} from "../material.js"
-import { ortho, perspective } from "../common/MVnew.js";
+import { ortho, perspective, vec3, vec2} from "../common/MVnew.js";
 
 /**
  * representation of a view, targeting an (optional) buffer
