@@ -207,7 +207,7 @@ export class ScreenBuffer {
 
 	_init(shaderProgram, postShaderProgram) {
 		this._inSetup = true
-		this.switchShaderPrograms(shaderProgram)
+		this.switchCurrentShaderPrograms(shaderProgram)
 		this.currentProgram = shaderProgram
 
 		//set up buffers, get attribute locations
@@ -476,7 +476,7 @@ export class ScreenBuffer {
 		//("Rendering")
 		//load new buffer data
 		//TODO: modify for custom programs
-		this.switchShaderPrograms(this.currentProgram)
+		this.switchCurrentShaderPrograms(this.currentProgram)
 		this._gTarget.viewport(0, 0, this.viewportSize.x, this.viewportSize.y);
 		this._gTarget.enable(this._gTarget.DEPTH_TEST);
 		this._gTarget.enable(this._gTarget.CULL_FACE);
