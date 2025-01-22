@@ -9,6 +9,8 @@ See the examples folder for examples on how to integrate into your own website.
 
 Tldr: add into the header your own JS code such as userCode.js in the examples. In userCode, import Q from /engine/engine.js. Define some functions of your own, such as mouse or keyboard events, or a tick function- build a game or what not! Finally, call Q.engineInit(...) filling in the necessary parameters based on your HTML and your user code, and the engine will begin running!
 
+Please note that the engine is currently undergoing major refactoring and may be broken in its current state. If you want to try to use the engine as it was before refactoring, check out where the project originated: https://andyherbert.net/engine and its mirrored github pages source https://github.com/andyman1222/andyman1222.github.io/tree/release/engine
+
 ## Current features:
 
 *   Dynamic mesh updating- modify the location of any number of points in any mesh in real time
