@@ -318,17 +318,17 @@ export class ScreenBuffer {
 					this._gTarget.bindTexture(this._gTarget.TEXTURE_2D, this._outImages[i]);
 					this._gTarget.texStorage2D(this._gTarget.TEXTURE_2D,
 						1,
-						(_FLOATING_EXT && _FLOATING_BUF_EXT ? this._gTarget.RGBA32F : this._gTarget.RGBA),
+						(this._FLOATING_EXT && this._FLOATING_BUF_EXT ? this._gTarget.RGBA32F : this._gTarget.RGBA),
 						this._gTarget.canvas.clientWidth,
 						this._gTarget.canvas.clientHeight)
 					/*this._gTarget.texImage2D(this._gTarget.TEXTURE_2D,
 						0,
-						(_FLOATING_EXT && _FLOATING_BUF_EXT ? this._gTarget.RGBA32F : this._gTarget.RGBA),
+						(this._FLOATING_EXT && this._FLOATING_BUF_EXT ? this._gTarget.RGBA32F : this._gTarget.RGBA),
 						this._gTarget.canvas.clientWidth,
 						this._gTarget.canvas.clientHeight,
 						0,
 						this._gTarget.RGBA,
-						(_FLOATING_EXT && _FLOATING_BUF_EXT ? this._gTarget.FLOAT : this._gTarget.UNSIGNED_BYTE),
+						(this._FLOATING_EXT && this._FLOATING_BUF_EXT ? this._gTarget.FLOAT : this._gTarget.UNSIGNED_BYTE),
 						null);*/ //all postprocess textures will support floating point if possible
 					// Mipmapping seems to cause problems in at least some cases
 					//this._gTarget.generateMipmap(this._gTarget.TEXTURE_2D);
