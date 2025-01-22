@@ -1,6 +1,6 @@
 "use strict";
 
-import {vec3, vec4, mult, add, cross, length, subtract, normalize, dot} from "./MVnew.js"
+import {vec3, vec4, mult, add, cross, length, subtract, normalize, dot, radians} from "./MVnew.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
 //Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays in globals.js _fisqrt
