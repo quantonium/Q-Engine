@@ -75,7 +75,7 @@ export function quatmult(quat1, quat2) {
 	var v1 =vec3(quat1.x, quat1.y, quat1.z), v2 =vec3(quat2.x, quat2.y, quat2.z)
 
 	var wn = w1 * w2 - (dot(v1, v2))
-	var vn = (MV.add(MV.add(MV.cross(v1, v2),mult(w1, v2)),mult(w2, v1)))
+	var vn = (add(add(cross(v1, v2),mult(w1, v2)),mult(w2, v1)))
 
 	return Quaternion(wn, vn[0], vn[1], vn[2])
 }
@@ -214,7 +214,7 @@ export function quaternionToEuler(quat) {
 export function rotateAbout(vec, quat) {
 	var p = Quaternion(0, vec[0], vec[1], vec[2])
 	var rp = Quaternion(quat.w, -quat.x, -quat.y, -quat.z)
-	var e = quatMV.mult(quatMV.mult(quat, p), rp)
+	var e = quat.mult(quat.mult(quat, p), rp)
 	//(e)
 	returnvec3(e.x, e.y, e.z)
 }
@@ -225,7 +225,7 @@ export function rotateAbout(vec, quat) {
  * @param {*} rot quaternion
  */
 export function forward(rot) {
-	return rotateAbout(MV.vec3(0, 0, 1), rot)
+	return rotateAbout(vec3(0, 0, 1), rot)
 }
 
 /**
@@ -233,7 +233,7 @@ export function forward(rot) {
  * @param {*} rot 
  */
 export function up(rot) {
-	return rotateAbout(MV.vec3(0, 1, 0), rot)
+	return rotateAbout(vec3(0, 1, 0), rot)
 }
 
 /**
@@ -241,7 +241,7 @@ export function up(rot) {
  * @param {*} rot 
  */
 export function right(rot) {
-	return rotateAbout(MV.vec3(1, 0, 0), rot)
+	return rotateAbout(vec3(1, 0, 0), rot)
 }
 
 /**
@@ -250,8 +250,8 @@ export function right(rot) {
  * @param {quaternion} deltaRot 
  */
 export function addRotation(initRot, deltaRot) {
-	//(quatMV.mult(deltaRot, initRot))
-	return quatMV.mult(deltaRot, initRot)
+	//(quatmult(deltaRot, initRot))
+	return quatmult(deltaRot, initRot)
 }
 
 /**
@@ -262,20 +262,20 @@ export function getMidpoint(points) {
 
 	if (arguments.length == 1) return arguments[0]
 	if (arguments.length == 2) returnmult(.5,add(arguments[0], arguments[1]))
-	if (arguments.length == 3) returnmult(.3333,add(MV.add(arguments[0], arguments[1]), arguments[2]))
-	if (arguments.length == 4) returnmult(.25,add(MV.add(arguments[0], arguments[1]),add(arguments[2], arguments[3])))
+	if (arguments.length == 3) returnmult(.3333,add(add(arguments[0], arguments[1]), arguments[2]))
+	if (arguments.length == 4) returnmult(.25,add(add(arguments[0], arguments[1]),add(arguments[2], arguments[3])))
 	throw "Function only supports list of length 1-4"
 }
 
 /**
- * Returns a 4-MV.vector representation of a plane- (x, y, z, b)
+ * Returns a 4-vector representation of a plane- (x, y, z, b)
  * @param {*} points 3 points
  */
 export function getPlane(points, normFunction = normalize) {
 	if (points.length == 3) {
-		var cp =cross(MV.subtract(points[2], points[0]),subtract(points[1], points[0]))
+		var cp =cross(subtract(points[2], points[0]),subtract(points[1], points[0]))
 		var d =dot(cp, points[2])
-		return normFunction(MV.vec4(cp[0], cp[1], cp[2], d))
+		return normFunction(vec4(cp[0], cp[1], cp[2], d))
 	}
 	throw "Can only get plane intersecting 3 points."
 }
@@ -292,10 +292,10 @@ export function linearIntersect(plane, line) {
 	var u =subtract(line[1], line[0])
 	var d =dot(plane3, u)
 
-	if (MV.dot != 0) {
+	if (dot != 0) {
 		var tmp =mult(-plane[3], plane3)
 		tmp =subtract(line[0], tmp)
-		tmp = -MV.dot(plane3, tmp) / d
+		tmp = -dot(plane3, tmp) / d
 		u =mult(tmp, u)
 		returnadd(line[0], u)
 	}
@@ -320,7 +320,7 @@ export function bin2dec(bin) {
 export function normalsFromTriangleVerts(v, i, normFunction =normalize) {
 	var r = []
 	for (var x = 0; x < i.length; x += 3) {
-		var c = normFunction(MV.cross(MV.subtract(v[i[x + 1]], v[i[x]]),subtract(v[i[x + 2]], v[i[x]])))
+		var c = normFunction(cross(subtract(v[i[x + 1]], v[i[x]]),subtract(v[i[x + 2]], v[i[x]])))
 		r.push(c)
 	}
 	return r
@@ -329,10 +329,10 @@ export function normalsFromTriangleVerts(v, i, normFunction =normalize) {
 export function tanFromTriangleVerts(v, i, t, normFunction =normalize) {
 	var r = []
 	for (var x = 0; x < i.length; x += 3) {
-		var e1 =subtract(v[i[x + 1]], v[i[x]]), e2 =subtract(v[i[x + 2]], v[i[x]]) //MV.vec3
-		var t1 =subtract(t[x+1], t[x]), t2 =subtract(t[x+2], t[x]) //MV.vec2
+		var e1 =subtract(v[i[x + 1]], v[i[x]]), e2 =subtract(v[i[x + 2]], v[i[x]]) //vec3
+		var t1 =subtract(t[x+1], t[x]), t2 =subtract(t[x+2], t[x]) //vec2
 		var f = 1.0 / ((t1[0]* t2[1])-(t2[0]*t1[1]))
-		r.push(normFunction(MV.mult(f,subtract(MV.mult(t2[1], e1),mult(t1[1], e2)))))
+		r.push(normFunction(mult(f,subtract(mult(t2[1], e1),mult(t1[1], e2)))))
 		
 	}
 	return r
@@ -344,7 +344,7 @@ export function tanFromTriangleVerts(v, i, t, normFunction =normalize) {
 function _flipTexCoords(r){
 	var e = []
 	for(var i = 0; i < r.length; i++){
-		e.push(MV.vec2(r[i][1], r[i][0]))
+		e.push(vec2(r[i][1], r[i][0]))
 	}
 	return e
 }
@@ -361,7 +361,7 @@ export function DrawInfo(pointIndex, matIndex, texCoords, normals, tangents, tex
 		bufferMask: bufferMask, cameraMask: cameraMask, lightMask: lightMask}
 }
 
-export function Transform(pos=MV.vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=MV.vec3(1,1,1)){
+export function Transform(pos=vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=vec3(1,1,1)){
 	return {pos: pos, rot: rot, scl: scl}
 }
 
