@@ -18,7 +18,7 @@ function _qSqrt(n, p=1) {
     return _fisqrt.y[0]
 }
 
-function fastNorm(u, excludeLastComponent) {
+export function fastNorm(u, excludeLastComponent) {
     if (u.type != 'vec3' && u.type != 'vec4') {
   
       throw "normalize: not a vector type";
@@ -58,7 +58,7 @@ function fastNorm(u, excludeLastComponent) {
     }
   }
 
-function clamp(num, min, max) {
+export function clamp(num, min, max) {
     if (num > max) return max;
     if (num < min) return min;
     return num;
@@ -70,7 +70,7 @@ function clamp(num, min, max) {
  * @param {Quaternion} quat1 
  * @param {Quaternion} quat2 
  */
-function quatmult(quat1, quat2) {
+export function quatmult(quat1, quat2) {
     var w1 = quat1.w, w2 = quat2.w;
     var v1 =vec3(quat1.x, quat1.y, quat1.z), v2 =vec3(quat2.x, quat2.y, quat2.z)
 
@@ -84,16 +84,16 @@ function quatmult(quat1, quat2) {
  * normalizes Quaternion just like a normalvector
  * @param {*} q 
  */
-function quatNorm(q) {
+export function quatNorm(q) {
     var n = Math.sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z)
     return Quaternion(q.w / n, q.x / n, q.y / n, q.z / n)
 }
 
-function Quaternion(w, x, y, z) {
+export function Quaternion(w, x, y, z) {
     return { w: w, x: x, y: y, z: z }
 }
 
-function quatEqual(q1, q2) {
+export function quatEqual(q1, q2) {
     return q1.w == q2.w && q1.x == q2.x && q1.y == q2.y && q1.z == q2.z
 }
 
@@ -102,7 +102,7 @@ function quatEqual(q1, q2) {
  * @param {*} rot 
  * @return {Quaternion} (w, x, y, z)
  */
-function eulerToQuat(axis, angle, normFunction = normalize) {
+export function eulerToQuat(axis, angle, normFunction = normalize) {
     if (length(axis) == 0) throw "Undefined axis (0,0,0)"
     var a =mult(axis,vec3(1, -1, 1))
     var c = Math.cos(radians(angle % 360) / 2)
