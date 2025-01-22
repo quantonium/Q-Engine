@@ -1,29 +1,49 @@
 "use strict";
 
-import Primitive from "./primitive.js"
+import {Primitive} from "./primitive.js"
+
+import { newID} from "../common/helpers-and-types.js";
 
 _objects = new Map();
 
 /**
- * 3D _Primitive containing material data, coordinate data, and _Bounds
- * Note: For attached primitives to _Object, if you want to attach a _Primitive to a point, you must set the _Primitive's transform to the point location manually.
+ * 3D _Primitive containing material data, coordinate data, and Bounds
+ * Note: For attached primitives to Object, if you want to attach a Primitive to a point, you must set the Primitive's transform to the point location manually.
  */
 export class Object extends Primitive {
-	_drawInfo = []
-	_pointInfo = []
-	_isEngine = false
-	_matInfo = []
-	_textureInfo = []
+
+	//Indicates what materials to render ot which face
+	drawInfo = []
+
+	//Points which create this object
+	pointInfo = []
+
+	isEngine = false
+
+	//Contains Materials required to render this object
+	matInfo = []
+
+	//Contains ComplexTextures necessary for materials in this object
+	textureInfo = []
+
+	//Set to false to hide the object
 	_visible = []
 	_id = -1
-	_bounds;
+
+	//bounds for this object
+	bounds;
+
+	//debug?
 	_drawPoints = new Float32Array()
 	_drawNormals = new Float32Array()
 	_drawTangents = new Float32Array()
 	
+	getID(){
+		return this._id;
+	}
 
 	/**To be called whenever individual points are adjusted */
-	_reevaluateBounds(pointInfo, boundsType) {
+	reevaluateBounds(pointInfo, boundsType) {
 		this._bounds = new _Bounds(pointInfo, boundsType);
 	}
 
@@ -37,20 +57,20 @@ export class Object extends Primitive {
 	constructor(startTransform, drawInfo, pointInfo, matInfo, boundsType, textureInfo = [], isEngine = false, visible = true) {
 		//if(startTransform.rot.length != 4) throw "Rotations must be quaternions!"
 		super(startTransform)
-		this._id = _newID();
+		this._id = newID();
 		this._drawInfo = drawInfo;
 		this._pointInfo = pointInfo;
-		this._reevaluateBounds(pointInfo, boundsType)
+		this.reevaluateBounds(pointInfo, boundsType)
 		this._isEngine = isEngine
 		this._matInfo = matInfo
-		this._textureInfo = textureInfo
-		this._visible = visible
+		this.textureInfo = textureInfo
+		this.visible = visible
 		_objects.set(this._id, this)
 	}
 
 
 	/**
-	 * Returns points array and bounding box relative to world coordinates
+	 * Feeds buf with necessary graphics data to render this object
 	 */
 	_setGraphicsData(buf, camera) {
 

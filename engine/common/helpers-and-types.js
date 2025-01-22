@@ -1,7 +1,6 @@
 "use strict";
 
 import * as MV from "./MVnew.js"
-import Q from "../engine.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
 //Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays in globals.js _fisqrt

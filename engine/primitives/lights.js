@@ -1,8 +1,6 @@
 "use strict";
 
-import Q from "../engine.js"
-
-import Primitive from "./primitive.js"
+import {Primitive} from "./primitive.js"
 
 _lights = [];
 
@@ -58,13 +56,13 @@ export class AmbientLight extends Primitive{
 /**
  * dummy class for convienence
  */
-export class _Light extends _AmbientLight{
+export class Light extends AmbientLight{
     constructor(c, m, n=_AmbientLight._NOCHANGE, e = true){
         super(c, m, n, e)
     }
 }
 
-export class _DirectionalLight extends _AmbientLight{
+export class DirectionalLight extends AmbientLight{
 
     _shadowMap;
     /**
@@ -84,7 +82,7 @@ export class _DirectionalLight extends _AmbientLight{
 
 }
 
-export class _PointLight extends _AmbientLight{
+export class PointLight extends AmbientLight{
     _attenuation;
     _diffuseMultiply = vec4(1,1,1,1)
     _specularMultiply = vec4(1,1,1,1)
@@ -107,7 +105,7 @@ export class _PointLight extends _AmbientLight{
     }
 }
 
-export class _SpotLight extends _PointLight{
+export class SpotLight extends PointLight{
     angle;
     /**
      * 

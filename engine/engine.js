@@ -181,3 +181,7 @@ class engine {
 var Q = new engine()
 
 export default Q;
+
+export function gl() {
+	return Q._gl
+}

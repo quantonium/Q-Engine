@@ -1,6 +1,15 @@
 "use strict";
 
 import Q from "../engine/engine.js"
+import {mult, vec3, vec4} from "../engine/common/MVnew.js"
+import {eulerToQuat, right, addRotation, fastNorm} from "../engine/common/helpers-and-types.js"
+import { getMousePos } from "../engine/userInput.js";
+import { AmbientLight, PointLight, DirectionalLight } from "../engine/primitives/lights.js";
+import {Camera} from "../engine/primitives/camera.js"
+import { BasicMaterial } from "../engine/material.js";
+import { Object } from "../engine/primitives/object.js";
+import { getRect, getCylinder, getSphere, addToPointIndArr, mergePointArrs } from "../engine/geometry.js";
+import { Bounds } from "../engine/bounds.js";
 
 var keys = []
 var pointerLocked = false;
@@ -62,7 +71,7 @@ function userMouseEvent(e) {
 			break;
 		case "mousedown":
 			if (e.button == 0) {
-				var pos = _getMousePos(e, Q.canvas)
+				var pos = getMousePos(e, Q.canvas)
 				if (pos[0] > -1 && pos[0] < 1 && pos[1] > -1 && pos[1] < 1) {
 					mouseReleased = false
 					mouseInRect = true
@@ -77,7 +86,7 @@ function userMouseEvent(e) {
 				pointerLocked = false;
 				if (!mouseMove) {
 
-					var pos = _getMousePos(e, Q.canvas)
+					var pos = getMousePos(e, Q.canvas)
 					if (pos[0] > -1 && pos[0] < 1 && pos[1] > -1 && pos[1] < 1) {
 						//var M = mult(Q.mainCamera.getProjMat(), Q.mainCamera.getViewMat())
 						Q.mainCamera.clearDebug()
@@ -171,42 +180,42 @@ var rClick = 0
 
 
 function init() {
-	altCamera = new _Camera(_bData, vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
-	altCamera._enabled = false
+	altCamera = new Camera(_bData, vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
+	altCamera.enabled = false
 	Q.mainCamera.transform.pos = vec3(0, 1, 0)
-	new _AmbientLight(vec4(1, 0, 0, 1), null)
-	directLight = new _DirectionalLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(.5, .5, .5), 90), scl: vec3(1, 1, 1) }, vec4(0, 0, 1, 1), null)
-	var playerLight = new _PointLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, vec4(0, 1, 0, 1), null, 10)
+	new AmbientLight(vec4(1, 0, 0, 1), null)
+	directLight = new DirectionalLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(.5, .5, .5), 90), scl: vec3(1, 1, 1) }, vec4(0, 0, 1, 1), null)
+	var playerLight = new PointLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, vec4(0, 1, 0, 1), null, 10)
 	Q.mainCamera.attachChildToSelf(playerLight, "relative")
-	altCamera._renderEngine = false
-	var tmp = _getRect(vec3(0, 0, 0), vec3(100, 0, 100))
-	new _Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(0, 0, 1), 0), scl: vec3(1, 1, 1) }, [
+	altCamera.renderEngine = false
+	var tmp = getRect(vec3(0, 0, 0), vec3(100, 0, 100))
+	new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(0, 0, 1), 0), scl: vec3(1, 1, 1) }, [
 		{ pointIndex: tmp.index, matIndex: 
 			[1, 1, 1, 1, 1, 1,//bottom
 			0, 0, 0, 0, 0, 0, //top
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1], texCoords: tmp.texCoords, type: _gl.TRIANGLES, normals: tmp.normals, tangents: tmp.tangents, textureIndex: -1}]
-		, tmp.points, [new _Material(), new _Material(-1)], _Bounds._RECT)
-	var cube = _getRect(vec3(-10,0,0),vec3(1,1,1))
-	var sphere = _getSphere(vec3(0,0,0),vec3(1,1,1),10,10)
-	var sphereArr = _addToPointIndArr(sphere.index, cube.points.length)
-	var cylinder = _getCylinder(vec3(10,0,0),vec3(1,1,1),10)
-	var cylinderArr = _addToPointIndArr(cylinder.index, cube.points.length+sphere.points.length)
-	var points = _mergePointArrs(_mergePointArrs(cube.points, sphere.points), cylinder.points)
-	var t = new _Object({pos: vec3(0, 1, 10), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)}, [{pointIndex: cube.index, matIndex: [0], texCoords: cube.texCoords,
-	type: _gl.TRIANGLES, normals: cube.normals, tangents: cube.tangents, textureIndex: -1}, {pointIndex: sphereArr, matIndex: [0], texCoords: sphere.texCoords,
-	type: _gl.TRIANGLES, normals: sphere.normals, tangents: sphere.tangents, textureIndex: -1}, {pointIndex: cylinderArr, matIndex: [0], texCoords: cylinder.texCoords,
-	type: _gl.TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new _BasicMaterial()], _Bounds._RECT, [])
+			1, 1, 1, 1, 1, 1], texCoords: tmp.texCoords, type: Q.gl().TRIANGLES, normals: tmp.normals, tangents: tmp.tangents, textureIndex: -1}]
+		, tmp.points, [new Material(), new Material(-1)], Bounds.RECT)
+	var cube = getRect(vec3(-10,0,0),vec3(1,1,1))
+	var sphere = getSphere(vec3(0,0,0),vec3(1,1,1),10,10)
+	var sphereArr = addToPointIndArr(sphere.index, cube.points.length)
+	var cylinder = getCylinder(vec3(10,0,0),vec3(1,1,1),10)
+	var cylinderArr = addToPointIndArr(cylinder.index, cube.points.length+sphere.points.length)
+	var points = mergePointArrs(mergePointArrs(cube.points, sphere.points), cylinder.points)
+	var t = new Object({pos: vec3(0, 1, 10), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)}, [{pointIndex: cube.index, matIndex: [0], texCoords: cube.texCoords,
+	type: Q.gl().TRIANGLES, normals: cube.normals, tangents: cube.tangents, textureIndex: -1}, {pointIndex: sphereArr, matIndex: [0], texCoords: sphere.texCoords,
+	type: Q.gl().TRIANGLES, normals: sphere.normals, tangents: sphere.tangents, textureIndex: -1}, {pointIndex: cylinderArr, matIndex: [0], texCoords: cylinder.texCoords,
+	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], _Bounds._RECT, [])
 
-	var s = _getRect(vec3(0, 0, 0), vec3(.5,.5,.5))
-	var x = new _Object({pos: vec3(0, 1, 0), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)},[{pointIndex: s.index, matIndex: [0], texCoords: s.texCoords, 
-	type: _gl.TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new _BasicMaterial()], _Bounds._RECT, [])
+	var s = getRect(vec3(0, 0, 0), vec3(.5,.5,.5))
+	var x = new Object({pos: vec3(0, 1, 0), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)},[{pointIndex: s.index, matIndex: [0], texCoords: s.texCoords, 
+	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new _BasicMaterial()], _Bounds._RECT, [])
 	x._attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 	t._customTickFunc = function(d, t) {this.transform.rot = addRotation(this.transform.rot, eulerToQuat(vec3(1,0,0), d*.01))}.bind(t)
-	var testLight = new _PointLight({pos: vec3(0,-1,0),rot:eulerToQuat(vec3(1,0,0),0),scl: vec3(1,1,1)}, vec4(1,1,1,1),null,10)
-	testLight._attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
+	var testLight = new PointLight({pos: vec3(0,-1,0),rot:eulerToQuat(vec3(1,0,0),0),scl: vec3(1,1,1)}, vec4(1,1,1,1),null,10)
+	testLight.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 }
 
 window.onload = function () {
