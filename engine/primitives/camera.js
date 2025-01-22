@@ -4,6 +4,7 @@ import {Primitive} from "./primitive.js"
 import {SolidColorNoLighting} from "../material.js"
 import { ortho, perspective, vec3, vec2, lookAt, add} from "../common/MVnew.js";
 import { eulerToQuat, forward, up} from "../common/helpers-and-types.js";
+import { getObjects } from "./object.js";
 
 /**
  * representation of a view, targeting an (optional) buffer
@@ -90,7 +91,7 @@ export class Camera extends Primitive {
 				f._setProjMatrix(this._currentProjMat);
 				//add objects for camera to render
 
-				_objects.forEach((o) => {
+				getObjects().forEach((o) => {
 					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o.isEngine) || !o._isEngine)) {
 						if (o.visible) {
 							o._setGraphicsData(f, this);
