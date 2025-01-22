@@ -68,7 +68,7 @@ export class Object extends Primitive {
 		this._matInfo = matInfo
 		this.textureInfo = textureInfo
 		this.visible = visible
-		_objects.set(this._id, this)
+		Object._objects.set(this._id, this)
 	}
 
 

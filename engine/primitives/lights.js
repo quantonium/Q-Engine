@@ -39,8 +39,8 @@ export class AmbientLight extends Primitive{
         this.color = c
         this.lightmask = m
         var i = 0;
-        for(i = 0; _lights[i] != null; i++){}
-        _lights[i] = this
+        for(i = 0; AmbientLight._lights[i] != null; i++){}
+        AmbientLight._lights[i] = this
         this._id = i
         this._enabled = e
         
@@ -48,7 +48,7 @@ export class AmbientLight extends Primitive{
     }
 
     destroyLight(){
-        _lights[this._id] = null;
+        AmbientLight._lights[this._id] = null;
         delete this;
     }
 

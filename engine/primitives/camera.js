@@ -181,7 +181,7 @@ export class Camera extends Primitive {
 		this._enabled = enabled
 		this._renderEngine = renderEngine
 		this.updateCameraView(fov, aspect, orthographic, range)
-		_cameras.push(this);
+		Camera._cameras.push(this);
 	}
 
 	getCameras() {

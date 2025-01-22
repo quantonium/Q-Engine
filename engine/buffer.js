@@ -1,7 +1,5 @@
 "use strict"
 
-_buffers = [];
-
 /**
  * An attribute location for a given buffer, mapping name to wgl location
  */
@@ -71,6 +69,12 @@ class _uniformLocation {
  * In most cases, it is unnecessary to create your own buffer as the default buffer provides rendering and postprocess.
  */
 export class ScreenBuffer {
+	static _buffers = [];
+
+	getBuffers() {
+		return ScreenBuffer._buffers
+	}
+
 	_matParams = []
 	_matIndicies = []
 	_points = []
@@ -173,7 +177,7 @@ export class ScreenBuffer {
 			cameraPosStr: cameraPosStr, cameraScaleStr: cameraScaleStr, customSetupFunction: customSetupFunction
 		}
 
-		_buffers.push(this);
+		ScreenBuffer._buffers.push(this);
 
 	}
 

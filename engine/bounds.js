@@ -10,7 +10,7 @@ import {getSphere, getRect} from "./geometry.js"
  * Todo: implement a proper transform so that this class can be used for collision bounds
  */
 export class Bounds {
-	static _bounds = []
+	//static _bounds = []
 
 	//constant bound types
 	static RECT = "rect"
@@ -99,11 +99,9 @@ export class Bounds {
 		return r
 	}
 
-	static getBounds() {
-		return Bounds._bounds
-	}
+	
 }
 
-export function getBounds() {
+/*export function getBounds() {
 	return Bounds._bounds
-}
+}*/
