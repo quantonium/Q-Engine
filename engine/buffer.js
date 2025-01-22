@@ -148,6 +148,10 @@ export class ScreenBuffer {
 
 	_drawBuffers = [];
 
+	//WEBGL EXTENSIONS
+	_FLOATING_EXT;
+	_FLOATING_BUF_EXT;
+
 	//Modify this value as needed to alter the size of the buffer viewport.
 	viewportSize = new vec2(1280,720)
 
@@ -178,6 +182,12 @@ export class ScreenBuffer {
 		normalStr = "inNormalL", tanStr = "inTangentL", biTanStr = null, texCoordStr = "inTexCoord",
 		cameraPosStr = "inCameraPosW", cameraScaleStr = "inCameraScale", customSetupFunction = function (gTarget, program) { },
 		bufferMask = 0x1) {
+
+		this._FLOATING_EXT = this.gTarget.getExtension("OES_texture_float_linear");
+		if (!this._FLOATING_EXT) console.warn("Floating point textures unsupported! Postprocess buffers might have undesired effects!");
+		this._FLOATING_BUF_EXT = this.gTarget.getExtension("EXT_color_buffer_float");
+		if (!this._FLOATING_BUF_EXT) console.warn("Floating point buffers unsupported! Postprocess buffers might have undesired effects!");
+		
 		this._gTarget = gTarget;
 		this.currentProgram = program;
 		this._bufferMask = bufferMask;

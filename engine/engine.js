@@ -30,10 +30,6 @@ class Engine {
 
 	////ENGINE ELEMENTS- have been moved into their respective js files for organization
 
-	//WEBGL EXTENSIONS
-	_FLOATING_EXT;
-	_FLOATING_BUF_EXT;
-
 
 	////COLLISION VARIABLES
 	_maskMap = []
@@ -178,10 +174,6 @@ class Engine {
 				reject("WebGL 2.0 isn't available");
 			}
 			var warn = "";
-			this._FLOATING_EXT = this._gl.getExtension("OES_texture_float_linear");
-			if (!this._FLOATING_EXT) console.warn("Floating point textures unsupported! Postprocess buffers might have undesired effects!");
-			this._FLOATING_BUF_EXT = this._gl.getExtension("EXT_color_buffer_float");
-			if (!this._FLOATING_BUF_EXT) console.warn("Floating point buffers unsupported! Postprocess buffers might have undesired effects!");
 			this._setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
 			resolve();
 		});
