@@ -295,8 +295,7 @@ export class ScreenBuffer {
 
 		if(postProcessProgram != null){
 			//setup postprocess buffers
-			this.switchCurrentShaderPrograms(postShaderProgram)
-			this.postShaderProgram = postShaderProgram
+			this.switchCurrentShaderPrograms(postProcessProgram)
 			this._outBuffer = this._gTarget.createFramebuffer();
 
 			if (this._setupInfo.postTexStr != null) {
@@ -328,18 +327,18 @@ export class ScreenBuffer {
 					this._gTarget.bindTexture(this._gTarget.TEXTURE_2D, null);
 
 					if (!(this._setupInfo.texStr instanceof Array)) {
-						this._postImageLoc.push(this._gTarget.getUniformLocation(postShaderProgram.program, this._setupInfo.postTexStr + "[" + i + "]"));
+						this._postImageLoc.push(this._gTarget.getUniformLocation(postProcessProgram.program, this._setupInfo.postTexStr + "[" + i + "]"));
 						if (this._postImageLoc[i] == -1) alert(this._setupInfo.postTexStr + "[" + i + "]" + ": unknown/invalid shader location");
 					}
 					else {
-						this._postImageLoc.push(this._gTarget.getUniformLocation(postShaderProgram.program, this._setupInfo.postTexStr[i]));
+						this._postImageLoc.push(this._gTarget.getUniformLocation(postProcessProgram.program, this._setupInfo.postTexStr[i]));
 						if (this._postImageLoc[i] == -1) alert(this._setupInfo.postTexStr[i] + ": unknown/invalid shader location");
 					}
 				}
 
 				if (this._setupInfo.coordStr != null) {
 					this._postPosBuf = this._gTarget.createBuffer();
-					this._postPosIn = this._gTarget.getAttribLocation(postShaderProgram.program, this._setupInfo.coordStr);
+					this._postPosIn = this._gTarget.getAttribLocation(postProcessProgram.program, this._setupInfo.coordStr);
 				}
 		
 				this._depthBuffer = this._gTarget.createRenderbuffer();
