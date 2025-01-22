@@ -141,11 +141,11 @@ export class Primitive {
 
 	}
 
-	_attachChildToSelf(child, attachType, newAttachTransform = null) {
+	attachChildToSelf(child, attachType, newAttachTransform = null) {
 		child.attachSelfToParent(this, attachType, newAttachTransform)
 	}
 
-	_detach(detachType) {
+	detach(detachType) {
 		if (this.parent == null) return
 		var newTransform = this.transform
 		var wt = this.getWorldTransform()
