@@ -22,6 +22,7 @@ Please note that the engine is currently undergoing major refactoring and may be
 *   Buffered input controls- Handle all inputs by the player in the order they arrive, not missing any inputs
 *   Separate graphics thread- Updates visuals independently from game logic
 *   Camera system- swap between multiple cameras in the 3D environment, with orthographic and perspective options, and customized scaling and FOV
+*   **NEW!** Module based architecture- using JS modules helps isolate engine code to prevent users from executing functions via the console
 
   
 
