@@ -205,7 +205,7 @@ export function quaternionToEuler(quat) {
 	var roll = ((Math.atan2(2 * (quat.w * quat.x + quat.y * quat.z), (1 - (2 * (quat.x * quat.x + quat.y * quat.y))))) / (2 * Math.PI)) * 360.0
 	var pitch = ((Math.asin(2 * (quat.w * quat.y - quat.z * quat.x))) / (2 * Math.PI)) * 360.0
 	var yaw = ((Math.atan2(2 * (quat.w * quat.z + quat.y * quat.x), (1 - (2 * (quat.y * quat.y + quat.z * quat.z))))) / (2 * Math.PI)) * 360.0
-	returnvec3(roll, pitch, yaw)
+	return vec3(roll, pitch, yaw)
 }
 
 /**
@@ -214,9 +214,9 @@ export function quaternionToEuler(quat) {
 export function rotateAbout(vec, quat) {
 	var p = Quaternion(0, vec[0], vec[1], vec[2])
 	var rp = Quaternion(quat.w, -quat.x, -quat.y, -quat.z)
-	var e = quat.mult(quat.mult(quat, p), rp)
+	var e = quatmult(quatmult(quat, p), rp)
 	//(e)
-	returnvec3(e.x, e.y, e.z)
+	return vec3(e.x, e.y, e.z)
 }
 
 /**
@@ -261,9 +261,9 @@ export function addRotation(initRot, deltaRot) {
 export function getMidpoint(points) {
 
 	if (arguments.length == 1) return arguments[0]
-	if (arguments.length == 2) returnmult(.5,add(arguments[0], arguments[1]))
-	if (arguments.length == 3) returnmult(.3333,add(add(arguments[0], arguments[1]), arguments[2]))
-	if (arguments.length == 4) returnmult(.25,add(add(arguments[0], arguments[1]),add(arguments[2], arguments[3])))
+	if (arguments.length == 2) return mult(.5,add(arguments[0], arguments[1]))
+	if (arguments.length == 3) return mult(.3333,add(add(arguments[0], arguments[1]), arguments[2]))
+	if (arguments.length == 4) return mult(.25,add(add(arguments[0], arguments[1]),add(arguments[2], arguments[3])))
 	throw "Function only supports list of length 1-4"
 }
 
@@ -273,8 +273,8 @@ export function getMidpoint(points) {
  */
 export function getPlane(points, normFunction = normalize) {
 	if (points.length == 3) {
-		var cp =cross(subtract(points[2], points[0]),subtract(points[1], points[0]))
-		var d =dot(cp, points[2])
+		var cp = cross(subtract(points[2], points[0]),subtract(points[1], points[0]))
+		var d = dot(cp, points[2])
 		return normFunction(vec4(cp[0], cp[1], cp[2], d))
 	}
 	throw "Can only get plane intersecting 3 points."
@@ -282,22 +282,22 @@ export function getPlane(points, normFunction = normalize) {
 
 /**
  * Returns intersection info regarding the intersection between avec4 plane and avec3 line
- * @param {*} planevec4 plane (x, y, z, b) normalized
- * @param {*} linevec3 line array consisting of 2 endpoints
+ * @param {*} plane vec4 plane (x, y, z, b) normalized
+ * @param {*} line vec3 line array consisting of 2 endpoints
  * via https://stackoverflow.com/questions/5666222/3d-line-plane-intersection
  */
 export function linearIntersect(plane, line) {
 	if (line.length != 2) throw "Can't make a line without 2 points"
-	var plane3 =vec3(plane[0], plane[1], plane[2])
-	var u =subtract(line[1], line[0])
-	var d =dot(plane3, u)
+	var plane3 = vec3(plane[0], plane[1], plane[2])
+	var u = subtract(line[1], line[0])
+	var d = dot(plane3, u)
 
 	if (dot != 0) {
-		var tmp =mult(-plane[3], plane3)
-		tmp =subtract(line[0], tmp)
+		var tmp = mult(-plane[3], plane3)
+		tmp = subtract(line[0], tmp)
 		tmp = -dot(plane3, tmp) / d
-		u =mult(tmp, u)
-		returnadd(line[0], u)
+		u = mult(tmp, u)
+		return add(line[0], u)
 	}
 	else return null
 
@@ -305,12 +305,12 @@ export function linearIntersect(plane, line) {
 
 //Removes the last channel of a vec4
 export function vec4to3(v4) {
-	returnvec3(v4[0], v4[1], v4[2])
+	return vec3(v4[0], v4[1], v4[2])
 }
 
 //Converts a vec3 to 4 by adding a channel of value 1
 export function vec3to4(v3) {
-	returnvec4(v3[0], v3[1], v3[2], 1)
+	return vec4(v3[0], v3[1], v3[2], 1)
 }
 
 export function bin2dec(bin) {
