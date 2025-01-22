@@ -9,7 +9,7 @@ import {Camera} from "../engine/primitives/camera.js"
 import { BasicMaterial } from "../engine/material.js";
 import { Object } from "../engine/primitives/object.js";
 import { getRect, getCylinder, getSphere, addToPointIndArr, mergePointArrs } from "../engine/geometry.js";
-import { Bounds } from "../engine/bounds.js";
+import { BoundsType } from "../engine/bounds.js";
 
 var keys = []
 var pointerLocked = false;
@@ -197,7 +197,7 @@ function init() {
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1], texCoords: tmp.texCoords, type: Q.gl().TRIANGLES, normals: tmp.normals, tangents: tmp.tangents, textureIndex: -1}]
-		, tmp.points, [new Material(), new Material(-1)], Bounds.RECT)
+		, tmp.points, [new Material(), new Material(-1)], BoundsType.RECT)
 	var cube = getRect(vec3(-10,0,0),vec3(1,1,1))
 	var sphere = getSphere(vec3(0,0,0),vec3(1,1,1),10,10)
 	var sphereArr = addToPointIndArr(sphere.index, cube.points.length)
@@ -207,11 +207,11 @@ function init() {
 	var t = new Object({pos: vec3(0, 1, 10), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)}, [{pointIndex: cube.index, matIndex: [0], texCoords: cube.texCoords,
 	type: Q.gl().TRIANGLES, normals: cube.normals, tangents: cube.tangents, textureIndex: -1}, {pointIndex: sphereArr, matIndex: [0], texCoords: sphere.texCoords,
 	type: Q.gl().TRIANGLES, normals: sphere.normals, tangents: sphere.tangents, textureIndex: -1}, {pointIndex: cylinderArr, matIndex: [0], texCoords: cylinder.texCoords,
-	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], Bounds.RECT, [])
+	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], BoundsType.RECT, [])
 
 	var s = getRect(vec3(0, 0, 0), vec3(.5,.5,.5))
 	var x = new Object({pos: vec3(0, 1, 0), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)},[{pointIndex: s.index, matIndex: [0], texCoords: s.texCoords, 
-	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new BasicMaterial()], Bounds.RECT, [])
+	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new BasicMaterial()], BoundsType.RECT, [])
 	x.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 	t._customTickFunc = function(d, t) {this.transform.rot = addRotation(this.transform.rot, eulerToQuat(vec3(1,0,0), d*.01))}.bind(t)
 	var testLight = new PointLight({pos: vec3(0,-1,0),rot:eulerToQuat(vec3(1,0,0),0),scl: vec3(1,1,1)}, vec4(1,1,1,1),null,10)

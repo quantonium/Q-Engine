@@ -1,8 +1,11 @@
 "use strict";
 
 import {Primitive} from "./primitive.js"
-
+import { SolidColorNoLighting } from "../material.js";
 import { newID} from "../common/helpers-and-types.js";
+import { vec2, vec3 } from "../common/MVnew.js";
+import { Bounds } from "../bounds.js";
+
 
 
 
@@ -47,7 +50,7 @@ export class Object extends Primitive {
 
 	/**To be called whenever individual points are adjusted */
 	reevaluateBounds(pointInfo, boundsType) {
-		this._bounds = new _Bounds(pointInfo, boundsType);
+		this.bounds = new Bounds(pointInfo, boundsType);
 	}
 
 	/**To be called whenever individual points are adjusted. Updates float32arrays  */
@@ -61,11 +64,11 @@ export class Object extends Primitive {
 		//if(startTransform.rot.length != 4) throw "Rotations must be quaternions!"
 		super(startTransform)
 		this._id = newID();
-		this._drawInfo = drawInfo;
-		this._pointInfo = pointInfo;
+		this.drawInfo = drawInfo;
+		this.pointInfo = pointInfo;
 		this.reevaluateBounds(pointInfo, boundsType)
-		this._isEngine = isEngine
-		this._matInfo = matInfo
+		this.isEngine = isEngine
+		this.matInfo = matInfo
 		this.textureInfo = textureInfo
 		this.visible = visible
 		Object._objects.set(this._id, this)
@@ -123,19 +126,19 @@ export class Object extends Primitive {
 					buf._renderData();
 			}
 		}
-		if (camera._showBounds && !this._isEngine) {
+		if (camera.showBounds && !this.isEngine) {
 			if (camera._render)
 				buf._renderData();
 			buf._types.push(buf._gTarget.LINE_LOOP);
-			var b = this._bounds._getGraphicsDrawBounds();
+			var b = this.bounds.getGraphicsDrawBounds();
 			buf._offsets.push(b.points.length)
 			for (var i = 0; i < b.points.length; i++) {
 				buf._points.push(b.points[i])
-				var tmp = new _SolidColorNoLighting(b.colors[i % b.colors.length]);
+				var tmp = new SolidColorNoLighting(b.colors[i % b.colors.length]);
 				buf._loadMaterial(tmp, false, camera._wireframe || camera._noLighting)
-				buf._normals.push(vec3(1, 0, 0))//_Bounds have no normals, this is just filler
+				buf._normals.push(vec3(1, 0, 0))//Bounds have no normals, this is just filler
 				buf._tangents.push(vec3(0, 1, 0))
-				buf._texCoords.push(vec2(0, 0)) //_Bounds have no textures, again just filler
+				buf._texCoords.push(vec2(0, 0)) //Bounds have no textures, again just filler
 				//buf_bitangents.push(vec3(0, 0, 1))
 			}
 		} //camera will take care of final _renderData for this object
