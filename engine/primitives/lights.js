@@ -1,6 +1,8 @@
 "use strict";
 
 import {Primitive} from "./primitive.js"
+import { vec3, vec4 } from "../common/MVnew.js";
+import { Quaternion } from "../common/helpers-and-types.js";
 
 //values for handleNegative
 export const LightNegativeHandlers = {
