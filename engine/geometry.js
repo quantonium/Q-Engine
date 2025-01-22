@@ -3,7 +3,7 @@
 import * as Common from "common/helpers-and-types.js"
 import * as MV from "common/MVnew.js"
 
-function _getSphere(pos, radius, numFaces, numLayers, rot=eulerToQuat(MV.vec3(0,1,0), 0), normFunction=MV.normalize){
+function getSphere(pos, radius, numFaces, numLayers, rot=Common.eulerToQuat(MV.vec3(0,1,0), 0), normFunction=MV.normalize){
 	var nl = numLayers+1
 	var r = [MV.add(pos, Common.rotateAbout(MV.vec3(0,radius[1],0), rot)), MV.subtract(pos, Common.rotateAbout(MV.vec3(0,radius[1],0), rot))]
 	var p = []
@@ -65,7 +65,7 @@ function _getSphere(pos, radius, numFaces, numLayers, rot=eulerToQuat(MV.vec3(0,
 	return{points: r, index: p, texCoords: tx, normals: norm, tangents: t}
 }
 
-function _getCylinder(pos, radiusHalfHeight, numFaces, rot=eulerToQuat(MV.vec3(0,1,0), 0), normFunction = MV.normalize) {
+function getCylinder(pos, radiusHalfHeight, numFaces, rot=eulerToQuat(MV.vec3(0,1,0), 0), normFunction = MV.normalize) {
 	var facePoints = []
 	for (var i = 0; i < numFaces; i++) {
 		var tmp = ((i / numFaces) * 360)
@@ -128,7 +128,7 @@ function _getCylinder(pos, radiusHalfHeight, numFaces, rot=eulerToQuat(MV.vec3(0
  * @param {MV.vec3} pos center of the rectangle
  * @param {MV.vec3} extent size of the rectangle from center to edge
  */
-function _getRect(pos, extent, rot=Common.eulerToQuat(MV.vec3(0,1,0), 0), normFunction = MV.normalize) {
+function getRect(pos, extent, rot=Common.eulerToQuat(MV.vec3(0,1,0), 0), normFunction = MV.normalize) {
 	//0
 	var blb = MV.add(pos, Common.rotateAbout(MV.vec3(-extent[0], -extent[1], -extent[2]), rot))
 	//1
@@ -189,6 +189,7 @@ function _getRect(pos, extent, rot=Common.eulerToQuat(MV.vec3(0,1,0), 0), normFu
 	return{points: p, index: ind, texCoords: tx, normals: norm, tangents: t}
 }
 
+//Adds the val to all elements in arr
 function _addToPointIndArr(arr, val){
 	var r = []
 	for(var x = 0; x < arr.length; x++)
@@ -196,6 +197,7 @@ function _addToPointIndArr(arr, val){
 	return r
 }
 
+//Merge two arrays into one
 function _mergePointArrs(firstArr, secArr){
 	return [...firstArr, ...secArr]
 }

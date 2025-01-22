@@ -40,5 +40,5 @@ function userKeyEvent(e) {
 }
 
 window.onload = function () {
-	Q._engineInit("gl-canvas", init, userTick, userKeyEvent, userMouseEvent)
+	Q.engineInit("gl-canvas", init, userTick, userKeyEvent, userMouseEvent)
 }

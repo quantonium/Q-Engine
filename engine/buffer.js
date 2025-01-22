@@ -1,3 +1,6 @@
+"use strict"
+
+_buffers = [];
 
 /**
  * TODO

@@ -1,39 +1,58 @@
+"use strict"
+
+import Primitive from "primitive.js"
+import * as Material from "../material.js"
+import Object from "object.js"
+
+_cameras = [];
+
 /**
  * representation of a view, targeting an (optional) buffer
  */
-class _Camera extends _Primitive {
+class Camera extends Primitive {
 
-	_debugPoints = []
-	_debugColors = []
-	_debugTypes = []
-	_debugOffsets = []
-	_wireframe = false
-	_noLighting = false
-	_showBounds = false
-	_renderEngine = false
-	_noTexture = false
-	_noParallax = false
-	_render = true
-	_enabled = true
+	//Debug point info to feed into opengl for manual rendering
+	debugPoints = []
+	debugColors = []
+	debugTypes = []
+	debugOffsets = []
+
+	//If true, camera renders in wireframe instead of shaded
+	wireframe = false
+
+	//If true, all lights are disabled
+	noLighting = false
+
+	//If true, shows the Bounds of all objects
+	showBounds = false
+
+
+	renderEngine = false
+	noTexture = false
+	noParallax = false
+	render = true
+	enabled = true
 	_bufs = []
-	_fov = 90
-	_aspect = 1280/720
-	_ortho = false
-	_range = [.1, 200000]
-	_currentProjMat = null
+	fov = 90
+	aspect = 1280/720
+
+	//if true, camera is in orthographic mode
+	ortho = false
+	range = [.1, 200000]
+	currentProjMat = null
 
 	_clearDebug() {
-		this._debugPoints = []
-		this._debugColors = []
-		this._debugTypes = []
-		this._debugOffsets = []
+		this.debugPoints = []
+		this.debugColors = []
+		this.debugTypes = []
+		this.debugOffsets = []
 	}
 
 	_getProjMat() {
-		return this._ortho ? ortho(-this._fov / 2, this._fov / 2, -(this._fov / 2) * this._aspect, (this._fov / 2) * this._aspect, this._range[0], this._range[1]) : perspective(this._fov, this._aspect, this._range[0], this._range[1])
+		return this.ortho ? ortho(-this._fov / 2, this._fov / 2, -(this._fov / 2) * this._aspect, (this._fov / 2) * this._aspect, this._range[0], this._range[1]) : perspective(this._fov, this._aspect, this._range[0], this._range[1])
 	}
 
-	_getViewMat() {
+	getViewMat() {
 		//var rotMat = null
 		//var t = this._getModelMat(true)
 		/*//bufferedConsoleLog(t)
@@ -45,7 +64,7 @@ class _Camera extends _Primitive {
 		
 
 		return rotMat*/
-		var tmp = this._getWorldTransform()
+		var tmp = this.getWorldTransform()
 		return lookAt(tmp.pos, add(tmp.pos,forward(tmp.rot)), up(tmp.rot), true)
 	}
 
@@ -58,10 +77,10 @@ class _Camera extends _Primitive {
 	}
 
 	/**
-	 * Pushes all points in every _Object in scene to its buffer
+	 * Pushes all points in every Object in scene to its buffer
 	 * @param wireframe if true, display all geometry as gl.LINE_LOOP
-	 * @param showBounds if true, show _Bounds of all geometry
-	 * @param renderAfter true if _Camera should be immediately rendered to its view after pushing data to buffer
+	 * @param showBounds if true, show Bounds of all geometry
+	 * @param renderAfter true if Camera should be immediately rendered to its view after pushing data to buffer
 	 */
 	_pushToBuffers() {
 		if (this._enabled) {
@@ -73,29 +92,29 @@ class _Camera extends _Primitive {
 				//adding objects
 
 				_objects.forEach((o) => {
-					if (((o._bufferMask & o._cameraMask & f._bufferMask & this._cameraMask) != 0) && ((this._renderEngine && o._isEngine) || !o._isEngine)) {
-						if (o._visible) {
+					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o._isEngine) || !o._isEngine)) {
+						if (o.visible) {
 							o._setGraphicsData(f, this);
 							if(this._render) f._renderData();
 						}
 					}
 				});
 				var x = 0
-				for (var o = 0; o < this._debugOffsets.length; o++) {
-					f._types.push(this._debugTypes[o])
-					f._offsets.push(this._debugOffsets[o])
-					for (var i = 0; i < this._debugOffsets[o]; i++) {
+				for (var o = 0; o < this.debugOffsets.length; o++) {
+					f._types.push(this.debugTypes[o])
+					f._offsets.push(this.debugOffsets[o])
+					for (var i = 0; i < this.debugOffsets[o]; i++) {
 						if (i.length + f._points.length > f._bufLimit)
 							f._renderData();
-						f._points.push(this._debugPoints[i + x])
-						var tmp = new _SolidColorNoLighting(this._debugColors[i % this._debugColors.length]);
+						f._points.push(this.debugPoints[i + x])
+						var tmp = new Material.SolidColorNoLighting(this.debugColors[i % this.debugColors.length]);
 						f._loadMaterial(tmp, false, this._wireframe || this._noLighting, this._noParallax)
 						f._normals.push(vec3(1, 0, 0))//debug data has no normals, this is just filler
 						f._tangents.push(vec3(0, 1, 0))
 						//f._bitangents.push(vec3(0, 0, 1))
 						f._texCoords.push(vec2(0, 0)) //_Bounds have no textures, again just filler
 					}
-					x += this._debugOffsets[o]
+					x += this.debugOffsets[o]
 				}
 				//render any remaining data
 				if (this._render)

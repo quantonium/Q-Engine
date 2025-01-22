@@ -1,15 +1,17 @@
 "use strict";
 
 import * as Input from "userInput.js"
-import * as Buffer from "buffer.js"
-import * as Camera from "camera.js"
-import * as ObjectClass from "classes.js"
+import Buffer from "buffer.js"
+import Camera from "camera.js"
+import * as Cameras from "camera.js"
+import Object from "object.js"
+import * as Lights from "primitives/lights.js"
 import * as Material from "material.js"
 import * as ShaderProgram from "shaderProgram.js"
 
 class engine {
 	_defaultAspect = 16 / 9
-	_maxLightCount = 64 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
+	_maxLightCount = 16 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
 	_fisqrt = {y: new Float32Array( 1 ), i: null}
 	////DO-NOT-TOUCH VARIABLES (updated constantly in the engine)
 	_time = 0;
@@ -24,13 +26,7 @@ class engine {
 	_mouseBuffer = []
 
 
-	////ENGINE ELEMENTS
-	_objects = new Map();
-	_buffers = [];
-	_cameras = [];
-	_lights = [];
-	_complexTextures = [];
-	_bounds = []
+	////ENGINE ELEMENTS- have been moved into their respective js files for organization
 
 	//WEBGL EXTENSIONS
 	_FLOATING_EXT;
@@ -43,9 +39,9 @@ class engine {
 
 	////DEFAULT RENDERING ELEMENTS
 	_gl;
-	_canvas;
+	canvas;
 	_bData;
-	_mainCamera;
+	mainCamera;
 	_defaultProgram;
 	_postProcessProgram;
 
@@ -76,7 +72,7 @@ class engine {
 		for (var i = 0; i < this._buffers.length; i++)
 			this._buffers[i]._beginRender();
 		for (var i = 0; i < this._cameras.length; i++)
-			this._cameras[i]._pushToBuffers();
+			Cameras._cameras[i]._pushToBuffers();
 		for (var i = 0; i < this._buffers.length; i++)
 			this._buffers[i]._applyPostProcessToScene();
 
@@ -89,9 +85,9 @@ class engine {
 
 	function _postTickFunction(delta, time) {
 		_userPostTickFunction(delta, time)
-		this._lights.forEach((o) => (o._postTick(delta, time)))
-		this._objects.forEach((o) => (o._postTick(delta, time)))
-		this._cameras.forEach((o) => (o._postTick(delta, time)))
+		Lights.lights.forEach((o) => (o._postTick(delta, time)))
+		this.Objects.forEach((o) => (o._postTick(delta, time)))
+		Cameras.cameras.forEach((o) => (o._postTick(delta, time)))
 	}
 
 	function _tick(prevTime) {
@@ -103,14 +99,14 @@ class engine {
 		l = this._mouseBuffer.length
 		for (var x = 0; x < l; x++)
 			this._userMouseFunction(this._mouseBuffer.shift())
-		this._lights.forEach((o) => (o._preTick(delta, this._time)))
-		this._objects.forEach((o) => (o._preTick(delta, this._time)))
-		this._cameras.forEach((o) => (o._preTick(delta, this._time)))
+		Lights._lights.forEach((o) => (o._preTick(delta, this._time)))
+		this.Objects.forEach((o) => (o._preTick(delta, this._time)))
+		Cameras._cameras.forEach((o) => (o._preTick(delta, this._time)))
 
 		if (this._tickEnabled) {
-			this._lights.forEach((o) => (o._onTick(delta, this._time)))
-			this._objects.forEach((o) => (o._onTick(delta, this._time)))
-			this._cameras.forEach((o) => (o._onTick(delta, this._time)))
+			Lights._lights.forEach((o) => (o._onTick(delta, this._time)))
+			this.Objects.forEach((o) => (o._onTick(delta, this._time)))
+			Cameras._cameras.forEach((o) => (o._onTick(delta, this._time)))
 			this._userTickFunction(delta, this._time)
 		}
 
@@ -138,7 +134,7 @@ class engine {
 
 		this._mainCamera = new Camera._Camera(this._bData);
 
-		this._coords = new ObjectClass._Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, [{
+		this._coords = new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, [{
 			pointIndex: [0, 1, 2, 3, 4, 5], matIndex: [0, 0, 1, 1, 2, 2], texCoords: [vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1)], type: this._gl.LINES,
 			normals: [vec3(-1, 0, 0), vec3(1, 0, 0), vec3(0, -1, 0), vec3(0, 1, 0), vec3(0, 0, -1), vec3(0, 0, 1)],
 			tangents: [vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0, 1), vec3(0, 0, -1), vec3(1, 0, 0), vec3(-1, 0, 0)], textureIndex: -1, bufferMask: 0x1, cameraMask: 0x1, lightMask: 0x1
@@ -150,23 +146,23 @@ f
 	async function _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
 		return new Promise((resolve, reject) => {
 
-			this._canvas = document.getElementById(defaultCanvas);
+			this.canvas = document.getElementById(defaultCanvas);
 			var ratio = window.devicePixelRatio || 1;
-			this._canvas.width = ratio * this._canvas.clientWidth;
-			this._canvas.height = ratio *this._canvas.clientHeight;
-			this._canvas.addEventListener("webglcontextlost", function (event) {
+			this.canvas.width = ratio * this.canvas.clientWidth;
+			this.canvas.height = ratio *this.canvas.clientHeight;
+			this.canvas.addEventListener("webglcontextlost", function (event) {
 				event.preventDefault();
 				cancelAnimationFrame(this._requestId);
 				alert("WebGL context lost. Please reload the page.")
 			}, false);
-			/*this._canvas.addEventListener("webglcontextrestored", function(event) {
+			/*this.canvas.addEventListener("webglcontextrestored", function(event) {
 				_setDefaultGraphics();
 				this._complexTextures.forEach((o) => {
 					o._init();
 				})
 				_render();
 			}, false);*/
-			this._gl = this._canvas.getContext('webgl2');
+			this._gl = this.canvas.getContext('webgl2');
 			if (!this._gl) {
 				reject("WebGL 2.0 isn't available");
 			}
@@ -181,7 +177,7 @@ f
 	}
 
 	//Initializes the engine, run this function first and foremost to start ticking
-	function _engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
+	function engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
 		defaultPostVertex = "../default-shaders/postprocess-vertex.glsl", defaultPostFragment = "../default-shaders/postprocess-fragment.glsl", userPostTick = function (delta, time) { }) {
 		this._userInitFunction = userInit
 		this._userTickFunction = userTick;
@@ -206,7 +202,6 @@ f
 
 	}
 }
+var Q = new engine()
 
-export default {
-	Q: new engine()
-}
+export default Q;
