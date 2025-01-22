@@ -9,6 +9,7 @@ import {SolidColorNoLighting} from "./material.js"
 import {ShaderProgram} from "./shaderProgram.js"
 import { vec4, vec3, vec2 } from "./common/MVnew.js";
 import { eulerToQuat } from "./common/helpers-and-types.js";
+import { getBounds } from "./bounds.js";
 
 class Engine {
 	//default engine aspect ratio
@@ -149,7 +150,7 @@ class Engine {
 			tangents: [vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0, 1), vec3(0, 0, -1), vec3(1, 0, 0), vec3(-1, 0, 0)], textureIndex: -1, bufferMask: 0x1, cameraMask: 0x1, lightMask: 0x1
 		}],
 			[vec3(-1000000, 0, 0), vec3(1000000, 0, 0), vec3(0, -1000000, 0), vec3(0, 1000000, 0), vec3(0, 0, -1000000), vec3(0, 0, 1000000)],
-			[new SolidColorNoLighting(vec4(1, 0, 0, 1)), new SolidColorNoLighting(vec4(0, 1, 0, 1)), new SolidColorNoLighting(vec4(0, 0, 1, 1))], this.bounds.RECT, [], true)
+			[new SolidColorNoLighting(vec4(1, 0, 0, 1)), new SolidColorNoLighting(vec4(0, 1, 0, 1)), new SolidColorNoLighting(vec4(0, 0, 1, 1))], getBounds().RECT, [], true)
 	}
 
 	async _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {

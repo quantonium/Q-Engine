@@ -102,6 +102,6 @@ export class Bounds {
 	
 }
 
-/*export function getBounds() {
+export function getBounds() {
 	return Bounds._bounds
-}*/
+}
