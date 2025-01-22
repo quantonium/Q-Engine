@@ -102,10 +102,9 @@ export class Bounds {
 	
 }
 
-export default {
-	RECT: Bounds.RECT,
-	SPHERE: Bounds.SPHERE
-}
+export let RECT = Bounds.RECT
+export let SPHERE = Bounds.SPHERE
+
 
 export function getBounds() {
 	return Bounds._bounds
