@@ -2,8 +2,8 @@
 
 import {Primitive} from "./primitive.js"
 import {SolidColorNoLighting} from "../material.js"
-import { ortho, perspective, vec3, vec2} from "../common/MVnew.js";
-import { eulerToQuat, forward, up } from "../common/helpers-and-types.js";
+import { ortho, perspective, vec3, vec2, lookAt} from "../common/MVnew.js";
+import { eulerToQuat, forward, up} from "../common/helpers-and-types.js";
 
 /**
  * representation of a view, targeting an (optional) buffer
