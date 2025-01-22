@@ -196,7 +196,7 @@ export class Engine {
 				this._gl.flush();
 				this._render();
 
-			}.bind(this))
+			})
 			.catch((err) => { alert(err); console.error(err); })
 
 	}
