@@ -1,7 +1,7 @@
 "use strict";
 
 import { _initInputs, _tickUserInput } from "./userInput.js";
-import Buffer from "./buffer.js"
+import {ScreenBuffer} from "./buffer.js"
 import {Camera, getCameras} from "./primitives/camera.js"
 import {Object, getObjects} from "./primitives/object.js"
 import {getLights} from "./primitives/lights.js"
@@ -137,7 +137,7 @@ class Engine {
 		this._defaultProgram = new ShaderProgram(this._gl, vertexPath, fragmentPath);
 		this._postProcessProgram = new ShaderProgram(this._gl, postVertexPath, postFragmentPath);
 
-		this._bData = new Buffer._ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram);
+		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram);
 
 		this._mainCamera = new Camera(this._bData);
 
