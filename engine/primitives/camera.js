@@ -1,7 +1,7 @@
 "use strict"
 
 import {Primitive} from "./primitive.js"
-import * as Material from "../material.js"
+import {SolidColorNoLighting} from "../material.js"
 
 _cameras = [];
 
@@ -106,7 +106,7 @@ export class Camera extends Primitive {
 						if (i.length + f._points.length > f._bufLimit)
 							f._renderData();
 						f._points.push(this.debugPoints[i + x])
-						var tmp = new Material.SolidColorNoLighting(this.debugColors[i % this.debugColors.length]);
+						var tmp = new SolidColorNoLighting(this.debugColors[i % this.debugColors.length]);
 						f._loadMaterial(tmp, false, this.wireframe || this.noLighting, this.noParallax)
 						f._normals.push(vec3(1, 0, 0))//debug data has no normals, this is just filler
 						f._tangents.push(vec3(0, 1, 0))
