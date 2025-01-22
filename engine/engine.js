@@ -119,7 +119,7 @@ export class Engine {
 		}
 		_bufferedConsoleTick()
 
-		_postTickFunction(delta, this._time)
+		this._postTickFunction(delta, this._time)
 		this._queueNewTick(this._tick);
 	}
 
