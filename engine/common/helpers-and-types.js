@@ -1,6 +1,6 @@
 "use strict";
 
-import {vec3, vec4, mult, add, cross, length, subtract, normalize, dot, radians} from "./MVnew.js"
+import {vec3, vec4, mult, add, cross, length, subtract, normalize, dot, radians, mat4, mat3} from "./MVnew.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
 //Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays in globals.js _fisqrt
@@ -116,13 +116,13 @@ export function eulerToQuat(axis, angle, normFunction = normalize) {
  * converts Quaternion (w, x, y, z) tomat4 for rotation
  * @param {*} rot 
  */
-export function quatTomat4(rot) {
+export function quatToMat4(rot) {
 	var v = quatNorm(rot)
 	var qw = v.w
 	var qx = v.x
 	var qy = v.y
 	var qz = v.z
-	returnmat4(
+	return mat4(
 		1 - 2 * (qy * qy + qz * qz), 2 * (qx * qy - qz * qw), 2 * (qx * qz + qy * qw), 0,
 		2 * (qx * qy + qz * qw), 1 - 2 * (qx * qx + qz * qz), 2 * (qy * qz - qx * qw), 0,
 		2 * (qx * qz - qy * qw), 2 * (qy * qz + qx * qw), 1 - 2 * (qx * qx + qy * qy), 0,
@@ -133,13 +133,13 @@ export function quatTomat4(rot) {
  * converts Quaternion tomat3 for rotation
  * @param {*} rot 
  */
-export function quatTomat3(rot) {
+export function quatToMat3(rot) {
 	var v = quatNorm(rot)
 	var qw = v.w
 	var qx = v.x
 	var qy = v.y
 	var qz = v.z
-	returnmat3(
+	return mat3(
 		1 - 2 * (qy * qy + qz * qz), 2 * (qx * qy - qz * qw), 2 * (qx * qz + qy * qw),
 		2 * (qx * qy + qz * qw), 1 - 2 * (qx * qx + qz * qz), 2 * (qy * qz - qx * qw),
 		2 * (qx * qz - qy * qw), 2 * (qy * qz + qx * qw), 1 - 2 * (qx * qx + qy * qy)
@@ -185,9 +185,9 @@ export function matToQuat(mat) {
 
 export function mat4ToTransform(m) {
 	var pos =vec3(m[0][3], m[1][3], m[2][3])
-	var scl =vec3(length(MV.vec3(m[0][0], m[0][1], m[0][2])),
-		length(MV.vec3(m[1][0], m[1][1], m[1][2])),
-		length(MV.vec3(m[2][0], m[2][1], m[2][2])))
+	var scl =vec3(length(vec3(m[0][0], m[0][1], m[0][2])),
+		length(vec3(m[1][0], m[1][1], m[1][2])),
+		length(vec3(m[2][0], m[2][1], m[2][2])))
 	var rot = matToQuat(m)
 
 	return { pos: pos, scl: scl, rot: rot }

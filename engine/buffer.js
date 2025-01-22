@@ -1,5 +1,7 @@
 "use strict"
 
+import { vec4 } from "./common/MVnew.js";
+
 /**
  * An attribute location for a given buffer, mapping name to wgl location
  */

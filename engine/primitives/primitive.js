@@ -1,3 +1,8 @@
+"use strict";
+
+import { mult, add, vec3, scale } from "../common/MVnew.js";
+import { rotateAbout, addRotation, quatToMat4 } from "../common/helpers-and-types.js";
+
 /**
  * something in 3D space that can be attached to other primitives
  */

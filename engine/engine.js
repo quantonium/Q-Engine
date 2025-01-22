@@ -7,6 +7,7 @@ import {Object, getObjects} from "./primitives/object.js"
 import {getLights} from "./primitives/lights.js"
 import {SolidColorNoLighting} from "./material.js"
 import {ShaderProgram} from "./shaderProgram.js"
+import { vec4, vec3 } from "./common/MVnew.js";
 
 class Engine {
 	//default engine aspect ratio
