@@ -61,7 +61,7 @@ class Engine {
 	_userPostTickFunction = function(){}
 
 	constructor(){
-		this._fisqrt.i = new Int32Array( this._fisqrt.y.buffer )
+		
 	}
 
 	gl(){
