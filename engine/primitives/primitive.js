@@ -86,7 +86,7 @@ export class Primitive {
 	 * @param {*} newAttachTransform Optional. Set a relative transform if attachType = "relative". If empty, set to parent transform
 	 */
 	attachSelfToParent(p, attachType, newAttachTransform = null) {
-		this._detach("keepWorld")
+		this.detach("keepWorld")
 		var wt = this.getWorldTransform()
 		var pt = p.getWorldTransform()
 		var it = mat4ToTransform(inverse4(p.getModelMat()))
