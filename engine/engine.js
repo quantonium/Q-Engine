@@ -1,13 +1,13 @@
 "use strict";
 
-import * as Input from "userInput.js"
-import Buffer from "buffer.js"
-import Camera from "camera.js"
-import * as Cameras from "camera.js"
-import Object from "object.js"
-import * as Lights from "primitives/lights.js"
-import * as Material from "material.js"
-import * as ShaderProgram from "shaderProgram.js"
+import * as Input from "./userInput.js"
+import Buffer from "./buffer.js"
+import Camera from "./primitives/camera.js"
+import * as Cameras from "./primitives/camera.js"
+import Object from "./primitives/object.js"
+import * as Lights from "./primitives/lights.js"
+import * as Material from "./material.js"
+import * as ShaderProgram from "./shaderProgram.js"
 
 class engine {
 	_defaultAspect = 16 / 9
@@ -48,13 +48,6 @@ class engine {
 
 	////DEFAULT GAME OBJECTS
 	_coords;
-
-
-	////DEBUG CONSOLE VARS
-	_consoleBuffer = []
-	_consoleBufferLock = false
-	_removedMessages = 0
-	_maxConsoleBuffer = 1000
 
 
 	////USER-DEFINED FUNCTIONS

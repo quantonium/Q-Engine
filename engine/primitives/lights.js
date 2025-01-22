@@ -2,7 +2,7 @@
 
 import Q from "../engine.js"
 
-import Primitive from "primitive.js"
+import Primitive from "./primitive.js"
 
 _lights = [];
 

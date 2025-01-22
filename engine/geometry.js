@@ -1,7 +1,7 @@
 "use strict";
 
-import * as Common from "common/helpers-and-types.js"
-import * as MV from "common/MVnew.js"
+import * as Common from "./common/helpers-and-types.js"
+import * as MV from "./common/MVnew.js"
 
 function getSphere(pos, radius, numFaces, numLayers, rot=Common.eulerToQuat(MV.vec3(0,1,0), 0), normFunction=MV.normalize){
 	var nl = numLayers+1

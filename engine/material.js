@@ -1,5 +1,7 @@
 "use strict";
 
+import {vec2, vec4} from "./common/MVnew.js"
+
 /**
  * Material points to index that defines its functionality in the shader, as well as any necessary arguments, such as specular, diffuse, etc.
  * Default: index 0, parameters=[baseColor=(.5,.5,.5,1), diffuse = (.5,.5,.5,1), specular = (.5,.5,.5,1), ambient = (.5,.5,.5,1), emissive = (0,0,0,1) (emissive alpha unused), misc = (shininess=1,parallax min=0 (default 8),parallax max=0 (default 32),parallax scale=0 (default .1)), texCoord=(uScale=1, vScale=1, uAdd=0, vAdd=0)]

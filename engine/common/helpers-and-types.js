@@ -1,6 +1,6 @@
 "use strict";
 
-import * as MV from "MVnew.js"
+import * as MV from "./MVnew.js"
 import Q from "../engine.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
@@ -304,12 +304,12 @@ function linearIntersect(plane, line) {
 
 }
 
-/**this should be in MVnew.js */
+//Removes the last channel of a vec4
 function vec4to3(v4) {
     return MV.vec3(v4[0], v4[1], v4[2])
 }
 
-/**this should be in MVnew.js */
+//Converts a vec3 to 4 by adding a channel of value 1
 function vec3to4(v3) {
     return MV.vec4(v3[0], v3[1], v3[2], 1)
 }

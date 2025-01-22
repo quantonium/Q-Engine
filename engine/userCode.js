@@ -4,7 +4,7 @@
 //Q is an engine instance that is created on page load
 //and which is shared across the files. There should be no
 //reason to create a different engine instance.
-import Q from "engine.js"
+import Q from "./engine.js"
 
 //default template for user code
 

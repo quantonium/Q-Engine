@@ -1,8 +1,8 @@
 "use strict"
 
-import Primitive from "primitive.js"
+import Primitive from "./primitive.js"
 import * as Material from "../material.js"
-import Object from "object.js"
+import Object from "./object.js"
 
 _cameras = [];
 

@@ -1,5 +1,10 @@
 "use strict"
 
+import {vec3, mult, subtract} from "./common/MVnew.js"
+import vec3to4 from "./common/helpers-and-types.js"
+
+import {getSphere, getRect} from "./geometry.js"
+
 _bounds = []
 
 /**
@@ -58,10 +63,10 @@ class Bounds {
 			if (this.type == Bounds.SPHERE) {
 				//get furthest point from points rendered
 
-				this.shape = _getSphere(this._pos, this._extent, 5, 5)
+				this.shape = getSphere(this.pos, this.extent, 5, 5)
 
 			} else if (this.type == Bounds.RECT) {
-				this.shape = _getRect(this._pos, this._extent);
+				this.shape = getRect(this.pos, this.extent);
 				//set pos to the middle of the min and max points
 
 			} else throw "Only Bounds types supported now are RECT and SPHERE"

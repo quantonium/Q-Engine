@@ -4,9 +4,15 @@
  * Instead use this function
  */
 
-function _bufferedConsoleLog(s) {
+////DEBUG CONSOLE VARS
+_consoleBuffer = []
+_consoleBufferLock = false
+_removedMessages = 0
+_maxConsoleBuffer = 1000
+
+function bufferedConsoleLog(s) {
 	if (_consoleBufferLock)
-		setTimeout(_bufferedConsoleLog, 10, s)
+		setTimeout(bufferedConsoleLog, 10, s)
 	else
 		if (_consoleBuffer.length < _maxConsoleBuffer)
 			switch (typeof s) {
@@ -19,3 +25,5 @@ function _bufferedConsoleLog(s) {
 		else _removedMessages++
 
 }
+
+export default bufferedConsoleLog;

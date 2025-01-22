@@ -1,6 +1,6 @@
 "use strict";
 
-import Primitive from "primitive.js"
+import Primitive from "./primitive.js"
 
 _objects = new Map();
 
