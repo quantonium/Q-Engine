@@ -85,11 +85,11 @@ export class Engine {
 		for (var i = 0; i < ScreenBuffer.getBuffers().length; i++)
 			ScreenBuffer.getBuffers()[i]._applyPostProcessToScene();
 
-		this._requestId = requestAnimationFrame(this._render).bind(this);
+		this._requestId = requestAnimationFrame(this._render.bind(this)).bind(this);
 	}
 
 	_queueNewTick(f) {
-		setTimeout(f, 1, Date.now());
+		setTimeout(f.bind(this), 1, Date.now());
 	}
 
 	_postTickFunction(delta, time) {
