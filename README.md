@@ -15,7 +15,7 @@ Please note that the engine is currently undergoing major refactoring and may be
 
 *   Dynamic mesh updating- modify the location of any number of points in any mesh in real time
 *   Material system- utilize PBR textures to create realistic materials, or specify parameters for many unique material types (emissive, transparent, specular and diffusive, unlit)
-*   Sophisticated lighting- support currently for up to 64 lights, with customizable parameters to cast on materials differently, and negative and translucent lighting
+*   Sophisticated lighting- support currently for up to 16 lights, with customizable parameters to cast on materials differently, and negative and translucent lighting
 *   Postrpocess layer- supports 10+ buffer inputs
 *   Object system- create parent-child relationships with 3D primitives to control multiple objects as one
 *   Gameplay update mechanics- tick-based updating with optional customizable functions to be called before or after tick/graphics/input
