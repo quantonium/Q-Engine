@@ -26,4 +26,17 @@ function bufferedConsoleLog(s) {
 
 }
 
+export function _bufferedConsoleTick() {
+	_consoleBufferLock = true
+	var tmp = [...this._consoleBuffer]
+	_consoleBuffer = []
+	var r = _removedMessages
+	_removedMessages = 0
+	_consoleBufferLock = false
+	tmp.forEach(function (i) {
+		console.log(i)
+	})
+	if (r > 0) console.log(r + " messages removed.\n")
+}
+
 export default bufferedConsoleLog;

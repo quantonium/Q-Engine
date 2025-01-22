@@ -10,6 +10,7 @@ import {ShaderProgram} from "./shaderProgram.js"
 import { vec4, vec3, vec2 } from "./common/MVnew.js";
 import { eulerToQuat } from "./common/helpers-and-types.js";
 import { BoundsType } from "./bounds.js";
+import { _bufferedConsoleTick } from "./console.js";
 
 
 export class Engine {
@@ -116,17 +117,7 @@ export class Engine {
 			getCameras().forEach((o) => (o._onTick(delta, this._time)))
 			this._userTickFunction(delta, this._time)
 		}
-
-		this._consoleBufferLock = true
-		var tmp = [...this._consoleBuffer]
-		this._consoleBuffer = []
-		var r = this._removedMessages
-		this._removedMessages = 0
-		this._consoleBufferLock = false
-		tmp.forEach(function (i) {
-			console.log(i)
-		})
-		if (r > 0) console.log(r + " messages removed.\n")
+		_bufferedConsoleTick()
 
 		_postTickFunction(delta, this._time)
 		this._queueNewTick(this._tick);
