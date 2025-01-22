@@ -1,6 +1,6 @@
 "use strict"
 
-import { vec4 } from "./common/MVnew.js";
+import { vec4, vec2 } from "./common/MVnew.js";
 
 /**
  * An attribute location for a given buffer, mapping name to wgl location
@@ -10,8 +10,9 @@ class _bufferSet {
 	inputAttribute; //attrib location
 	locationName; //string
 
-	constructor(locationName, gTarget = null, shaderProgram = null){
+	constructor(locationName, gTarget = null, shaderProgram = null, defaultViewportSize = vec2(1280,720)){
 		this.locationName = locationName;
+		this.viewportSize = defaultViewportSize
 		if(gTarget != null && shaderProgram != null)
 			this.setupBuffer(gTarget, shaderProgram, true)
 	}
@@ -138,6 +139,9 @@ export class ScreenBuffer {
 	_inSetup = false;
 
 	_drawBuffers = [];
+
+	//Modify this value as needed to alter the size of the buffer viewport.
+	viewportSize = new vec2(1280,720)
 
 	_setupInfo = {
 		coordStr: null, matStr: null, matParamCount: null, matIndStr: null, texStr: null, texCount: null, postTexStr: null, postTexCount: null, projMatrixStr: null,
@@ -466,7 +470,7 @@ export class ScreenBuffer {
 		//load new buffer data
 		//TODO: modify for custom programs
 		this.switchShaderPrograms(this._program)
-		this._gTarget.viewport(0, 0, _canvas.width, _canvas.height);
+		this._gTarget.viewport(0, 0, this.viewportSize.x, this.viewportSize.y);
 		this._gTarget.enable(this._gTarget.DEPTH_TEST);
 		this._gTarget.enable(this._gTarget.CULL_FACE);
 		//this._gTarget.enable(this._gTarget.DEPTH_CLAMP); //not supported in WebGL

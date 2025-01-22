@@ -19,6 +19,9 @@ class Engine {
 	//max light count to be supported by this engine instance
 	maxLightCount = 16 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
 
+	//if true, sets the viewport size to the canvas size every tick, in case the html element is resized
+	setViewportSizeToCanvasSize = true;
+
 	_fisqrt = {y: new Float32Array( 1 ), i: null}
 	////DO-NOT-TOUCH VARIABLES (updated constantly in the engine)
 	_time = 0;
@@ -104,6 +107,10 @@ class Engine {
 		getLights().forEach((o) => (o._postTick(delta, time)))
 		getObjects().forEach((o) => (o._postTick(delta, time)))
 		getCameras().forEach((o) => (o._postTick(delta, time)))
+		if(this.setViewportSizeToCanvasSize){
+			this._bData.viewportSize.x = this.canvas.width
+			this._bData.viewportSize.y = this.canvas.height
+		}
 	}
 
 	_tick(prevTime) {
@@ -140,7 +147,7 @@ class Engine {
 		this._defaultProgram = new ShaderProgram(this._gl, vertexPath, fragmentPath);
 		this._postProcessProgram = new ShaderProgram(this._gl, postVertexPath, postFragmentPath);
 
-		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram);
+		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram, new vec2(this.canvas.width, this.canvas.height));
 
 		this._mainCamera = new Camera(this._bData);
 

@@ -34,7 +34,6 @@ export class Camera extends Primitive {
 	enabled = true
 	_bufs = []
 	fov = 90
-	aspect = 1280/720
 
 	//if true, camera is in orthographic mode
 	ortho = false
@@ -77,7 +76,7 @@ export class Camera extends Primitive {
 	}
 
 	/**
-	 * Pushes all points in every Object in scene to its buffer
+	 * Pushes all points in every Object in scene to its buffer(s)
 	 * @param wireframe if true, display all geometry as gl.LINE_LOOP
 	 * @param showBounds if true, show Bounds of all geometry
 	 * @param renderAfter true if Camera should be immediately rendered to its view after pushing data to buffer
@@ -130,14 +129,7 @@ export class Camera extends Primitive {
 	}
 
 	//Modifies the camera view via a variety of parameters
-	updateCameraView(fov = this._fov, aspect = this._aspect, orthographic = this._ortho, range = this._range, width=null, height=null) {
-		var w = width
-		var h = height
-		var a = aspect
-		
-		if(w == null) w = this._bufs[0]._gTarget.canvas.clientWidth;
-		if(h == null) h = this._bufs[0]._gTarget.canvas.clientHeight;
-		if (a < 0) a = w / h
+	updateCameraView(fov = this._fov, orthographic = this._ortho, range = this._range) {
 
 		var changed = false;
 		if(this._fov != fov){
@@ -153,12 +145,7 @@ export class Camera extends Primitive {
 			this._range = range;
 			changed = true
 		}
-		
-		
-		if (a != this._aspect) {
-			this._aspect = a
-			changed = true
-		}
+
 
 		if(changed || this._currentProjMat == null)
 			this._currentProjMat = this.getProjMat()
@@ -174,7 +161,7 @@ export class Camera extends Primitive {
 	 * @param {*} ortho 
 	 * @param {*} targetBuffers
 	 */
-	constructor(targetBuffers, pos = vec3(0, 0, 0), rot = eulerToQuat(vec3(1, 0, 0), 0), scl = vec3(1, 1, 1), fov = 90, aspect = -1, orthographic = false, range = [.1, 200000], enabled = true, renderEngine = false) {
+	constructor(targetBuffers, pos = vec3(0, 0, 0), rot = eulerToQuat(vec3(1, 0, 0), 0), scl = vec3(1, 1, 1), fov = 90, orthographic = false, range = [.1, 200000], enabled = true, renderEngine = false) {
 		//if(rot.length != 4) throw "Rotations must be quaternions!"
 		super({ pos: pos, rot: rot, scl: scl })
 		this._flipZRotation = true
@@ -182,7 +169,7 @@ export class Camera extends Primitive {
 		else this._bufs = [targetBuffers]
 		this._enabled = enabled
 		this._renderEngine = renderEngine
-		this.updateCameraView(fov, aspect, orthographic, range)
+		this.updateCameraView(fov, orthographic, range)
 		Camera._cameras.push(this);
 	}
 
