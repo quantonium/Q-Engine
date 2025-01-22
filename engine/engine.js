@@ -41,6 +41,7 @@ class Engine {
 
 	////DEFAULT RENDERING ELEMENTS
 	_gl;
+	_bData;
 
 	//a reference to the canvas which the engine will render to
 	canvas;
