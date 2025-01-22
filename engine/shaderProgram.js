@@ -1,6 +1,6 @@
 "use strict";
 
-import { loadFileAJAX } from "./common/helpers-and-types";
+import { loadFileAJAX } from "./common/helpers-and-types.js";
 
 //Wrapper for openGL shader program, working with a vertex and fragment shader
 export class ShaderProgram{
