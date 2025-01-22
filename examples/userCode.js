@@ -28,12 +28,14 @@ var altCamera;
 
 var directLight;
 
+let mainCamera;
+
 function switchCamera() {
-	if (Q.mainCamera.enabled) {
-		Q.mainCamera.enabled = false
+	if (mainCamera.enabled) {
+		mainCamera.enabled = false
 		altCamera.enabled = true
 	} else {
-		Q.mainCamera.enabled = true
+		mainCamera.enabled = true
 		altCamera.enabled = false
 	}
 }
@@ -57,9 +59,9 @@ function userMouseEvent(e) {
 
 				xSpeed = e.movementX * maxSpeed
 				ySpeed = e.movementY * maxSpeed
-				if (Q.mainCamera.enabled) {
-					Q.mainCamera.transform.rot = addRotation(Q.mainCamera.transform.rot, eulerToQuat(vec3(0, 1, 0), -xSpeed))
-					Q.mainCamera.transform.rot = addRotation(Q.mainCamera.transform.rot, eulerToQuat(right(Q.mainCamera.transform.rot), ySpeed))
+				if (mainCamera.enabled) {
+					mainCamera.transform.rot = addRotation(mainCamera.transform.rot, eulerToQuat(vec3(0, 1, 0), -xSpeed))
+					mainCamera.transform.rot = addRotation(mainCamera.transform.rot, eulerToQuat(right(mainCamera.transform.rot), ySpeed))
 				}
 				else {
 					altCamera.transform.rot = addRotation(altCamera.transform.rot, eulerToQuat(vec3(0, 1, 0), -xSpeed))
@@ -88,10 +90,10 @@ function userMouseEvent(e) {
 
 					var pos = getMousePos(e, Q.canvas)
 					if (pos[0] > -1 && pos[0] < 1 && pos[1] > -1 && pos[1] < 1) {
-						//var M = mult(Q.mainCamera.getProjMat(), Q.mainCamera.getViewMat())
-						Q.mainCamera.clearDebug()
-						//var mousePos = getScreenPosInWorldSpace(Q.mainCamera, pos)
-						//var intersect = linearIntersect(getPlane(vec3(0, 1, 0), vec3(1, 1, 0), vec3(1, 1, 1), fastNorm), [mousePos, Q.mainCamera.getWorldTransform().pos])
+						//var M = mult(mainCamera.getProjMat(), mainCamera.getViewMat())
+						mainCamera.clearDebug()
+						//var mousePos = getScreenPosInWorldSpace(mainCamera, pos)
+						//var intersect = linearIntersect(getPlane(vec3(0, 1, 0), vec3(1, 1, 0), vec3(1, 1, 1), fastNorm), [mousePos, mainCamera.getWorldTransform().pos])
 					}
 					rClick = 1;
 				}
@@ -111,27 +113,27 @@ function userTick(delta, time) {
 	directLight.transform.rot = addRotation(directLight.transform.rot, eulerToQuat(vec3(0, 1, 0), delta * .1))
 	for (var i = 0; i < keys.length; i++)
 		if (keys[i]) {
-			if (Q.mainCamera.enabled) {
+			if (mainCamera.enabled) {
 				var d = vec3(0,0,0)
-				var f = forward(Q.mainCamera.transform.rot), r = right(Q.mainCamera.transform.rot)
+				var f = forward(mainCamera.transform.rot), r = right(mainCamera.transform.rot)
 				if ((i == 87) || (i == 119)) {//w
-					var n = add(Q.mainCamera.transform.pos, mult(.01 * delta, fastNorm(vec3(f[0], 0, f[2]))))
-						Q.mainCamera.transform.pos = n
+					var n = add(mainCamera.transform.pos, mult(.01 * delta, fastNorm(vec3(f[0], 0, f[2]))))
+						mainCamera.transform.pos = n
 				}
 
 				if ((i == 65) || (i == 97)) {//a
-					var n = add(Q.mainCamera.transform.pos, mult(-.01 * delta, fastNorm(vec3(r[0], 0, r[2]))))
-						Q.mainCamera.transform.pos = n
+					var n = add(mainCamera.transform.pos, mult(-.01 * delta, fastNorm(vec3(r[0], 0, r[2]))))
+						mainCamera.transform.pos = n
 				}
 
 				if ((i == 83) || (i == 115)) {//s
-					var n = add(Q.mainCamera.transform.pos, mult(-.01 * delta, fastNorm(vec3(f[0], 0, f[2]))))
-						Q.mainCamera.transform.pos = n
+					var n = add(mainCamera.transform.pos, mult(-.01 * delta, fastNorm(vec3(f[0], 0, f[2]))))
+						mainCamera.transform.pos = n
 				}
 
 				if ((i == 68) || (i == 100)) {//d
-					var n = add(Q.mainCamera.transform.pos, mult(.01 * delta, fastNorm(vec3(r[0], 0, r[2]))))
-						Q.mainCamera.transform.pos = n
+					var n = add(mainCamera.transform.pos, mult(.01 * delta, fastNorm(vec3(r[0], 0, r[2]))))
+						mainCamera.transform.pos = n
 				}
 			}
 			else {
@@ -163,8 +165,8 @@ function userTick(delta, time) {
 		}
 
 	/*if(!pointerLocked){
-		Q.mainCamera.transform.rot = addRotation(Q.mainCamera.transform.rot, eulerToQuat(vec3(0, 1, 0), -xSpeed))
-		Q.mainCamera.transform.rot = addRotation(Q.mainCamera.transform.rot, eulerToQuat(right(Q.mainCamera.transform.rot), ySpeed))
+		mainCamera.transform.rot = addRotation(mainCamera.transform.rot, eulerToQuat(vec3(0, 1, 0), -xSpeed))
+		mainCamera.transform.rot = addRotation(mainCamera.transform.rot, eulerToQuat(right(mainCamera.transform.rot), ySpeed))
 		if(Math.abs(xSpeed) > .1)
 			xSpeed -= Math.sign(xSpeed)*delta*(maxSpeed*.001)
 		else xSpeed = 0
@@ -182,11 +184,12 @@ var rClick = 0
 function init() {
 	altCamera = new Camera(Q.getDefaultBuffer(), vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
 	altCamera.enabled = false
-	Q.mainCamera.transform.pos = vec3(0, 1, 0)
+	mainCamera = Q.mainCamera
+	mainCamera.transform.pos = vec3(0, 1, 0)
 	new AmbientLight(vec4(1, 0, 0, 1), null)
 	directLight = new DirectionalLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(.5, .5, .5), 90), scl: vec3(1, 1, 1) }, vec4(0, 0, 1, 1), null)
 	var playerLight = new PointLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, vec4(0, 1, 0, 1), null, 10)
-	Q.mainCamera.attachChildToSelf(playerLight, "relative")
+	mainCamera.attachChildToSelf(playerLight, "relative")
 	altCamera.renderEngine = false
 	var tmp = getRect(vec3(0, 0, 0), vec3(100, 0, 100))
 	new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(0, 0, 1), 0), scl: vec3(1, 1, 1) }, [
