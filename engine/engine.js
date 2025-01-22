@@ -12,12 +12,6 @@ import { eulerToQuat } from "./common/helpers-and-types.js";
 import { BoundsType } from "./bounds.js";
 
 class Engine {
-	//default engine aspect ratio
-	//todo: obsolete this in favor of getting the canvas aspect ratio?
-	defaultAspect = 16 / 9
-
-	//max light count to be supported by this engine instance
-	maxLightCount = 16 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
 
 	//if true, sets the viewport size to the canvas size every tick, in case the html element is resized
 	setViewportSizeToCanvasSize = true;

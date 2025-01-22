@@ -7,6 +7,12 @@ export class ShaderProgram{
 
     program;
 
+    //max light count to be supported by this shader program.
+    //ScreenBuffers read from this value to load in light info.
+    //Value should be ignored for UI and postprocess ShaderPrograms,
+    //though maybe not for postprocess so as to allow for deferred shading
+	maxLightCount = 16 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
+
     constructor(gl, vShader, fShader){
         this.compileShaders(gl, vShader, fShader);
     }

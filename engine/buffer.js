@@ -119,8 +119,16 @@ export class ScreenBuffer {
 	_textureLoc = []
 	_cameraSclLoc;
 	
-	_currentProgram;
-	_postProcessProgram;
+	//Current 3D ShaderProgram that this buffer will use to render.
+	//Set to null to disable
+	currentProgram = null;
+
+	//Current postprocess ShaderProgram that this buffer will use to render.
+	//Set to null to disable (will not output to display!)
+	postProcessProgram = null;
+
+	//the actual active program
+	_activeProgram = null;
 
 	_bufLimit;
 	_matParamCount = 0;
@@ -187,20 +195,20 @@ export class ScreenBuffer {
 
 	}
 
-	switchShaderPrograms(newProgram){
+	switchCurrentShaderPrograms(newProgram){
 		this._gTarget.useProgram(newProgram.program)
-		this._currentProgram = newProgram;
-		return this._currentProgram.program;
+		this._activeProgram = newProgram;
+		return this._activeProgram.program;
 	}
 
 	getWGLProgram(){
-		return this._currentProgram.program;
+		return this._activeProgram.program;
 	}
 
 	_init(shaderProgram, postShaderProgram) {
 		this._inSetup = true
-		this._gTarget.useProgram(shaderProgram.program)
-		this._currentProgram = shaderProgram;
+		this.switchShaderPrograms(shaderProgram)
+		this.currentProgram = shaderProgram
 
 		//set up buffers, get attribute locations
 		this._posBuffer = new _bufferSet(this._setupInfo.coordStr, this._gTarget, shaderProgram);
@@ -260,7 +268,7 @@ export class ScreenBuffer {
 
 		//TODO: cleanup
 		if (this._setupInfo.lightsArrayStr != null)
-			for (var i = 0; i < _maxLightCount; i++) {
+			for (var i = 0; i < this.currentProgram._maxLightCount; i++) {
 				this._lightTypeArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, this._setupInfo.lightsArrayStr + "[" + i + "].type"))
 				if (this._lightTypeArrayLoc == -1) alert(this._setupInfo.lightsArrayStr + ": unknown/invalid shader location (check that this points to an array of lights containing the necessary fields.)");
 				this._lightLocArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, this._setupInfo.lightsArrayStr + "[" + i + "].locationW"))
@@ -284,8 +292,8 @@ export class ScreenBuffer {
 		this._setupInfo.customSetupFunction(this._gTarget, shaderProgram.program);
 
 		//setup postprocess buffers
-		this._gTarget.useProgram(postShaderProgram.program)
-		this._currentProgram = postShaderProgram;
+		this.switchCurrentShaderPrograms(postShaderProgram)
+		this.postShaderProgram = postShaderProgram
 		this._outBuffer = this._gTarget.createFramebuffer();
 
 		if (this._setupInfo.postTexStr != null) {
@@ -360,14 +368,13 @@ export class ScreenBuffer {
 		}
 
 		//complete setup
-		this._gTarget.useProgram(this._program.program)
-		this._currentProgram = shaderProgram;
+		this.switchCurrentShaderPrograms(this.currentProgram)
 		this._setup = true
 		this._inSetup = false
 	}
 
 	_clearBuffers() {
-		this._customClearFunction(this._gTarget, this._currentProgram)
+		this._customClearFunction(this._gTarget, this.currentProgram)
 		for (var i = 0; i < this._matParamCount; i++)
 			this._matParams[i] = []
 		this._matIndicies = []
@@ -469,7 +476,7 @@ export class ScreenBuffer {
 		//("Rendering")
 		//load new buffer data
 		//TODO: modify for custom programs
-		this.switchShaderPrograms(this._program)
+		this.switchShaderPrograms(this.currentProgram)
 		this._gTarget.viewport(0, 0, this.viewportSize.x, this.viewportSize.y);
 		this._gTarget.enable(this._gTarget.DEPTH_TEST);
 		this._gTarget.enable(this._gTarget.CULL_FACE);
@@ -481,9 +488,9 @@ export class ScreenBuffer {
 		this._gTarget.depthFunc(this._gTarget.LESS);
 
 		if (!this._inSetup) {
-			if (!this._setup) this._init(this._program, this._postProcessProgram);
+			if (!this._setup) this._init(this.currentProgram, this.postProcessProgram);
 
-			this._customBeginRenderFunction(this._gTarget, this._program)
+			this._customBeginRenderFunction(this._gTarget, this.currentProgram)
 			this._updateLights();
 
 			for(var i = 0; i < this._texCount; i++){
@@ -579,11 +586,11 @@ export class ScreenBuffer {
 			//draw
 			var offset = 0;
 			for (var i = 0; i < this._types.length; i++) {
-				this._customRenderFunction(this._gTarget, this._program);
+				this._customRenderFunction(this._gTarget, this.currentProgram);
 				this._gTarget.drawArrays(this._types[i], offset, this._offsets[i]);
 				offset += this._offsets[i];
 			}
-			this._customPostRenderFunction(this._gTarget, this._program);
+			this._customPostRenderFunction(this._gTarget, this.postProcessProgram);
 		}
 		/*var tmp = this._gTarget.getError()
 		if (tmp != this._gTarget.NO_ERROR) {
@@ -605,7 +612,7 @@ export class ScreenBuffer {
 	_applyPostProcessToScene() {
 
 		//this._gTarget.drawBuffers([this._gTarget.NONE, this._gTarget.NONE]);
-		this._gTarget.useProgram(this._postProcessProgram.program)
+		this.switchCurrentShaderPrograms(this.postProcessProgram)
 		this._gTarget.depthFunc(this._gTarget.LESS)
 		this._gTarget.bindFramebuffer(this._gTarget.FRAMEBUFFER, null);
 
