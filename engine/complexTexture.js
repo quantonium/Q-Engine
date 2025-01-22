@@ -8,7 +8,7 @@ complexTextures = [];
  * Representation of a texture with a base color, normal, displacement, AO (diffuse) and roughness (specular) images
  * Default urls: [base color image, normal map, displacement map, AO/diffuse map, specular map, emissive map]
  */
-class ComplexTexture {
+export class ComplexTexture {
     _images = []
     _texs = []
 

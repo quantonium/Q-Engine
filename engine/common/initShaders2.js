@@ -1,7 +1,7 @@
 "use strict";
 
     // Get a file as a string using  AJAX
-    function loadFileAJAX(name) {
+    export function loadFileAJAX(name) {
         var xhr = new XMLHttpRequest(),
         okStatus = document.location.protocol === "file:" ? 0 : 200;
         xhr.open('GET', name, false);

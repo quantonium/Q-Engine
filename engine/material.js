@@ -7,7 +7,7 @@ import {vec2, vec4} from "./common/MVnew.js"
  * Default: index 0, parameters=[baseColor=(.5,.5,.5,1), diffuse = (.5,.5,.5,1), specular = (.5,.5,.5,1), ambient = (.5,.5,.5,1), emissive = (0,0,0,1) (emissive alpha unused), misc = (shininess=1,parallax min=0 (default 8),parallax max=0 (default 32),parallax scale=0 (default .1)), texCoord=(uScale=1, vScale=1, uAdd=0, vAdd=0)]
  */
 
-class Material {
+export class Material {
     //index which defines functionality within the shader, such as transparency effects or texture usage
     index
 
@@ -29,7 +29,7 @@ class Material {
 }
 
 //BasicMaterial provides simple defaults for the Material superclass.
-class BasicMaterial extends Material{
+export class BasicMaterial extends Material{
     constructor(baseColor = vec4(1,1,1,1), diffuse=1,specular=1,ambient=1, emissiveColor = vec4(0,0,0,1), shininess=1,txCoordScl=vec2(1,1),txCoordDisp=vec2(0,0)){
         super(1, [baseColor, 
             vec4(diffuse, diffuse, diffuse, 1), 
@@ -42,14 +42,14 @@ class BasicMaterial extends Material{
 }
 
 //A material that does not render
-class NoDraw extends Material {
+export class NoDraw extends Material {
     constructor() {
         super(-1)
     }
 }
 
 //A basic material that's one color, unlit
-class SolidColorNoLighting extends Material {
+export class SolidColorNoLighting extends Material {
     constructor(color) {
         super(0, [vec4(color[0], color[1], color[2], color[3]),
         vec4(0, 0, 0, 1),
@@ -62,7 +62,7 @@ class SolidColorNoLighting extends Material {
 }
 
 //A material featuring a texture as the base color, with optional parallax
-class ScaledTexMat extends Material {
+export class ScaledTexMat extends Material {
     constructor(parallax=false, uScale = 1, vScale = 1, uDisp=0, vDisp=0, minLayers=8, maxLayers=32, heightScale=.1, parameters = [vec4(1, 1, 1, 1), vec4(.5, .5, .5, 1), vec4(1, 1, 1, 1), vec4(1, 1, 1, 1), vec4(0,0,0,1), vec4(1, 8, 32, .1), vec4(1, 1, 0, 0)]){
         super(1, [parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], vec4(parameters[5][0], minLayers, maxLayers, heightScale), vec4(uScale, vScale, uDisp, vDisp)])
         if(parallax) this.index = 2;
@@ -71,7 +71,7 @@ class ScaledTexMat extends Material {
 }
 
 //A material like ScaledTexMat but unlit
-class ScaledTexMatNoLight extends ScaledTexMat {
+export class ScaledTexMatNoLight extends ScaledTexMat {
     constructor(parallax=false, uScale = 1, vScale = 1, uDisp=0, vDisp=0, minLayers=8, maxLayers=32, heightScale=.1, parameters = [vec4(1, 1, 1, 1), vec4(.5, .5, .5, 1), vec4(1, 1, 1, 1), vec4(1, 1, 1, 1), vec4(0,0,0,1), vec4(1, 8, 32, .1), vec4(1, 1, 0, 0)]){
         super(parallax, uScale, vScale, uDisp, vDisp, minLayers, maxLayers, heightScale, parameters)
         if(parallax) this.index = 4;

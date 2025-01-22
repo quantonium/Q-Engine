@@ -9,7 +9,7 @@ _cameras = [];
 /**
  * representation of a view, targeting an (optional) buffer
  */
-class Camera extends Primitive {
+export class Camera extends Primitive {
 
 	//Debug point info to feed into opengl for manual rendering
 	debugPoints = []

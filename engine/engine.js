@@ -21,11 +21,6 @@ class engine {
 	//_offsetThreshold = 99; //Used to reduce array sizes created with flatten because otherwise JS will waste teime garbage collecting
 
 
-	////USER INPUT
-	_keyBuffer = [];
-	_mouseBuffer = []
-
-
 	////ENGINE ELEMENTS- have been moved into their respective js files for organization
 
 	//WEBGL EXTENSIONS
@@ -54,8 +49,6 @@ class engine {
 	_userTickFunction = function(){}
 	_userInitFunction = function(){}
 	_userPostTickFunction = function(){}
-	_userKeyFunction = function(){}
-	_userMouseFunction = function(){}
 
 	constructor(){
 		this._fisqrt.i = new Int32Array( this._fisqrt.y.buffer )
@@ -86,16 +79,10 @@ class engine {
 	_tick(prevTime) {
 		var delta = Date.now() - prevTime;
 		this._time += delta;
-		var l = this._keyBuffer.length
-		for (var x = 0; x < l; x++)
-			this._userKeyFunction(this._keyBuffer.shift())
-		l = this._mouseBuffer.length
-		for (var x = 0; x < l; x++)
-			this._userMouseFunction(this._mouseBuffer.shift())
 		Lights._lights.forEach((o) => (o._preTick(delta, this._time)))
 		this.Objects.forEach((o) => (o._preTick(delta, this._time)))
 		Cameras._cameras.forEach((o) => (o._preTick(delta, this._time)))
-
+		Input._tickUserInput()
 		if (this._tickEnabled) {
 			Lights._lights.forEach((o) => (o._onTick(delta, this._time)))
 			this.Objects.forEach((o) => (o._onTick(delta, this._time)))
@@ -135,7 +122,7 @@ class engine {
 			[vec3(-1000000, 0, 0), vec3(1000000, 0, 0), vec3(0, -1000000, 0), vec3(0, 1000000, 0), vec3(0, 0, -1000000), vec3(0, 0, 1000000)],
 			[new Material._SolidColorNoLighting(vec4(1, 0, 0, 1)), new Material._SolidColorNoLighting(vec4(0, 1, 0, 1)), new Material._SolidColorNoLighting(vec4(0, 0, 1, 1))], this._bounds._RECT, [], true)
 	}
-f
+
 	async _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
 		return new Promise((resolve, reject) => {
 
@@ -172,12 +159,8 @@ f
 	//Initializes the engine, run this function first and foremost to start ticking
 	engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
 		defaultPostVertex = "../default-shaders/postprocess-vertex.glsl", defaultPostFragment = "../default-shaders/postprocess-fragment.glsl", userPostTick = function (delta, time) { }) {
-		this._userInitFunction = userInit
-		this._userTickFunction = userTick;
-		this._userKeyFunction = userKey;
-		this._userMouseFunction = userMouse;
 		this._userPostTickFunction = userPostTick;
-		Input._initInputs(this._keyBuffer, this._mouseBuffer)
+		Input._initInputs(userKey, userMouse)
 		this._initDefaultGraphics(defaultCanvas, defaultVertex, defaultFragment, defaultPostVertex, defaultPostFragment)
 			.then(() => {
 				//delay initial running of code by 1s to allow stuff to load in

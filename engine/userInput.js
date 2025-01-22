@@ -5,12 +5,20 @@ import {vec2, vec3, inverse, mult} from "./common/MVnew.js"
 //userInput.js defines functions to assist with translating between screen input and the 3D world,
 //and sets up key and mouse bindings to be used with the user defined functions.
 
+////USER INPUT
+_keyBuffer = [];
+_mouseBuffer = []
+
+//USER DEFINED INPUT FUNCTIONS
+_userKeyFunction = function(e){}
+_userMouseFunction = function(e){}
+
 /**
  * gets mouse position relative to target canvas, in a scale of -1 to 1
  * @param {*} evt 
  * @param {*} target 
  */
-function getMousePos(evt, target) {
+export function getMousePos(evt, target) {
 	var rect = target.getBoundingClientRect();
 	//(rect)
 	return vec2((evt.clientX - rect.right) / (rect.width / 2) + 1, -((evt.clientY - rect.top) / (rect.height / 2) - 1))
@@ -21,8 +29,8 @@ function getMousePos(evt, target) {
  * @param {*} camera 
  * @param {*} pos vec2 from -1 to 1
  */
-function getScreenPosInWorldSpace(camera, pos) {
-    var M = inverse(mult(camera._getProjMat(), camera.getViewMat()))
+export function getScreenPosInWorldSpace(camera, pos) {
+    var M = inverse(mult(camera.getProjMat(), camera.getViewMat()))
 
     var v = mult(M, vec4(
         pos[0],
@@ -35,24 +43,35 @@ function getScreenPosInWorldSpace(camera, pos) {
 
 }
 
-function _initInputs(keyBuffer, mouseBuffer){
+export function _initInputs(userKeyFunction, userMouseFunction){
 	window.addEventListener("keyup", (e) => {
-		keyBuffer.push(e);
+		_keyBuffer.push(e);
 	})
 
 	window.addEventListener("keydown", (e) => {
-		keyBuffer.push(e);
+		_keyBuffer.push(e);
 	})
 
 	window.addEventListener("mouseup", (e) => {
-		mouseBuffer.push(e);
+		_mouseBuffer.push(e);
 	})
 
 	window.addEventListener("mousedown", (e) => {
-		mouseBuffer.push(e);
+		_mouseBuffer.push(e);
 	})
 
 	window.addEventListener("mousemove", (e) => {
-		mouseBuffer.push(e);
+		_mouseBuffer.push(e);
 	})
+	_userKeyFunction = userKeyFunction;
+	_userMouseFunction = userMouseFunction;
+}
+
+export function _tickUserInput(){
+	var l = this._keyBuffer.length
+		for (var x = 0; x < l; x++)
+			this._userKeyFunction(_keyBuffer.shift())
+		l = this._mouseBuffer.length
+		for (var x = 0; x < l; x++)
+			this._userMouseFunction(_mouseBuffer.shift())
 }

@@ -117,7 +117,7 @@ function eulerToQuat(axis, angle, normFunction = normalize) {
  * converts Quaternion (w, x, y, z) to MV.mat4 for rotation
  * @param {*} rot 
  */
-function quatTomat4(rot) {
+export function quatTomat4(rot) {
     var v = quatNorm(rot)
     var qw = v.w
     var qx = v.x
@@ -134,7 +134,7 @@ function quatTomat4(rot) {
  * converts Quaternion to MV.mat3 for rotation
  * @param {*} rot 
  */
-function quatTomat3(rot) {
+export function quatTomat3(rot) {
     var v = quatNorm(rot)
     var qw = v.w
     var qx = v.x
@@ -147,13 +147,13 @@ function quatTomat3(rot) {
     );
 }
 
-function invQuat(quat) {
+export function invQuat(quat) {
     var ql = Math.sqrt(quat.w * quat.w + quat.x * quat.x + quat.y * quat.y + quat.z * quat.z)
     return Quaternion(quat.w / ql, -quat.x / ql, -quat.y / ql, -quat.z / ql)
 }
 
 /**based on https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/ */
-function matToQuat(mat) {
+export function matToQuat(mat) {
     var tr = mat[0][0] + mat[1][1] + mat[2][2], qw, qx, qy, qz, S
 
     if (tr > 0) {
@@ -184,7 +184,7 @@ function matToQuat(mat) {
     return Quaternion(qw, qx, qy, qz)
 }
 
-function mat4ToTransform(m) {
+export function mat4ToTransform(m) {
     var pos = MV.vec3(m[0][3], m[1][3], m[2][3])
     var scl = MV.vec3(length(MV.vec3(m[0][0], m[0][1], m[0][2])),
         length(MV.vec3(m[1][0], m[1][1], m[1][2])),
@@ -194,7 +194,7 @@ function mat4ToTransform(m) {
     return { pos: pos, scl: scl, rot: rot }
 }
 
-function quatLerp(u, v, s) {
+export function quatLerp(u, v, s) {
     var result = new Array(u.length);
     for (var i = 0; i < u.length; ++i) {
         result[i] = (1.0 - s) * u[i] + s * v[i];
@@ -202,7 +202,7 @@ function quatLerp(u, v, s) {
     return Quaternion((1 - s) * u["w"] + s * v["w"], (1 - s) * u["x"] + s * v["x"], (1 - s) * u["y"] + s * v["y"], (1 - s) * u["z"] + s * v["z"]);
 }
 
-function quaternionToEuler(quat) {
+export function quaternionToEuler(quat) {
     var roll = ((Math.atan2(2 * (quat.w * quat.x + quat.y * quat.z), (1 - (2 * (quat.x * quat.x + quat.y * quat.y))))) / (2 * Math.PI)) * 360.0
     var pitch = ((Math.asin(2 * (quat.w * quat.y - quat.z * quat.x))) / (2 * Math.PI)) * 360.0
     var yaw = ((Math.atan2(2 * (quat.w * quat.z + quat.y * quat.x), (1 - (2 * (quat.y * quat.y + quat.z * quat.z))))) / (2 * Math.PI)) * 360.0
@@ -212,7 +212,7 @@ function quaternionToEuler(quat) {
 /**
  * rotates MV.vec3 about a quaternion
  */
-function rotateAbout(vec, quat) {
+export function rotateAbout(vec, quat) {
     var p = Quaternion(0, vec[0], vec[1], vec[2])
     var rp = Quaternion(quat.w, -quat.x, -quat.y, -quat.z)
     var e = quatMV.mult(quatMV.mult(quat, p), rp)
@@ -225,7 +225,7 @@ function rotateAbout(vec, quat) {
  * This is just the 3rd column of the rotation matrix, but I am not using that to avoid using a loop
  * @param {*} rot quaternion
  */
-function forward(rot) {
+export function forward(rot) {
     return rotateAbout(MV.vec3(0, 0, 1), rot)
 }
 
@@ -233,7 +233,7 @@ function forward(rot) {
  * return up MV.vector of a quaternion (w, x, y, z)
  * @param {*} rot 
  */
-function up(rot) {
+export function up(rot) {
     return rotateAbout(MV.vec3(0, 1, 0), rot)
 }
 
@@ -241,7 +241,7 @@ function up(rot) {
  * return right MV.vector of a quaternion (w, x, y, z)
  * @param {*} rot 
  */
-function right(rot) {
+export function right(rot) {
     return rotateAbout(MV.vec3(1, 0, 0), rot)
 }
 
@@ -250,7 +250,7 @@ function right(rot) {
  * @param {quaternion} initRot 
  * @param {quaternion} deltaRot 
  */
-function addRotation(initRot, deltaRot) {
+export function addRotation(initRot, deltaRot) {
     //(quatMV.mult(deltaRot, initRot))
     return quatMV.mult(deltaRot, initRot)
 }
@@ -259,7 +259,7 @@ function addRotation(initRot, deltaRot) {
  * loop-free midpoint
  * @param {*} points 2, 3, or 4 points. Errors if more than 3. Precision to 4 points.
  */
-function getMidpoint(points) {
+export function getMidpoint(points) {
 
     if (arguments.length == 1) return arguments[0]
     if (arguments.length == 2) return MV.mult(.5, MV.add(arguments[0], arguments[1]))
@@ -272,7 +272,7 @@ function getMidpoint(points) {
  * Returns a 4-MV.vector representation of a plane- (x, y, z, b)
  * @param {*} points 3 points
  */
-function getPlane(points, normFunction = normalize) {
+export function getPlane(points, normFunction = normalize) {
     if (points.length == 3) {
         var cp = MV.cross(MV.subtract(points[2], points[0]), MV.subtract(points[1], points[0]))
         var d = MV.dot(cp, points[2])
@@ -287,7 +287,7 @@ function getPlane(points, normFunction = normalize) {
  * @param {*} line MV.vec3 line array consisting of 2 endpoints
  * via https://stackoverflow.com/questions/5666222/3d-line-plane-intersection
  */
-function linearIntersect(plane, line) {
+export function linearIntersect(plane, line) {
     if (line.length != 2) throw "Can't make a line without 2 points"
     var plane3 = MV.vec3(plane[0], plane[1], plane[2])
     var u = MV.subtract(line[1], line[0])
@@ -305,20 +305,20 @@ function linearIntersect(plane, line) {
 }
 
 //Removes the last channel of a vec4
-function vec4to3(v4) {
+export function vec4to3(v4) {
     return MV.vec3(v4[0], v4[1], v4[2])
 }
 
 //Converts a vec3 to 4 by adding a channel of value 1
-function vec3to4(v3) {
+export function vec3to4(v3) {
     return MV.vec4(v3[0], v3[1], v3[2], 1)
 }
 
-function bin2dec(bin) {
+export function bin2dec(bin) {
     return parseInt(bin, 2).toString(10);
 }
 
-function normalsFromTriangleVerts(v, i, normFunction = MV.normalize) {
+export function normalsFromTriangleVerts(v, i, normFunction = MV.normalize) {
     var r = []
     for (var x = 0; x < i.length; x += 3) {
         var c = normFunction(MV.cross(MV.subtract(v[i[x + 1]], v[i[x]]), MV.subtract(v[i[x + 2]], v[i[x]])))
@@ -327,7 +327,7 @@ function normalsFromTriangleVerts(v, i, normFunction = MV.normalize) {
     return r
 }
 
-function tanFromTriangleVerts(v, i, t, normFunction = MV.normalize) {
+export function tanFromTriangleVerts(v, i, t, normFunction = MV.normalize) {
     var r = []
     for (var x = 0; x < i.length; x += 3) {
         var e1 = MV.subtract(v[i[x + 1]], v[i[x]]), e2 = MV.subtract(v[i[x + 2]], v[i[x]]) //MV.vec3
@@ -352,14 +352,16 @@ function _flipTexCoords(r){
 
 ///////////////////////////////////////////////////
 
-function _newID() { return Q._id++ }
+_id = 0;
+
+export function newID() { return _id++ }
 
 
-function _DrawInfo(pointIndex, matIndex, texCoords, normals, tangents, textureIndex = -1, type=_gl.TRIANGLES, bufferMask = 0x1, cameraMask = 0x1, lightMask = 0x1){
+export function DrawInfo(pointIndex, matIndex, texCoords, normals, tangents, textureIndex = -1, type=_gl.TRIANGLES, bufferMask = 0x1, cameraMask = 0x1, lightMask = 0x1){
     return {pointIndex: pointIndex, matIndex: matIndex, texCoords: texCoords, normals: normals, tangents: tangents, textureIndex: textureIndex, type: type, 
         bufferMask: bufferMask, cameraMask: cameraMask, lightMask: lightMask}
 }
 
-function _Transform(pos=MV.vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=MV.vec3(1,1,1)){
+export function Transform(pos=MV.vec3(0,0,0), rot=Quaternion(1,0,0,0), scl=MV.vec3(1,1,1)){
     return {pos: pos, rot: rot, scl: scl}
 }

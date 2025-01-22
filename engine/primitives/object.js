@@ -8,7 +8,7 @@ _objects = new Map();
  * 3D _Primitive containing material data, coordinate data, and _Bounds
  * Note: For attached primitives to _Object, if you want to attach a _Primitive to a point, you must set the _Primitive's transform to the point location manually.
  */
-class Object extends Primitive {
+export class Object extends Primitive {
 	_drawInfo = []
 	_pointInfo = []
 	_isEngine = false

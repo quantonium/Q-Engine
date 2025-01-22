@@ -6,7 +6,7 @@ import Primitive from "./primitive.js"
 
 _lights = [];
 
-class AmbientLight extends Primitive{
+export class AmbientLight extends Primitive{
     //light's emission color
     color;
 
@@ -58,13 +58,13 @@ class AmbientLight extends Primitive{
 /**
  * dummy class for convienence
  */
-class _Light extends _AmbientLight{
+export class _Light extends _AmbientLight{
     constructor(c, m, n=_AmbientLight._NOCHANGE, e = true){
         super(c, m, n, e)
     }
 }
 
-class _DirectionalLight extends _AmbientLight{
+export class _DirectionalLight extends _AmbientLight{
 
     _shadowMap;
     /**
@@ -84,7 +84,7 @@ class _DirectionalLight extends _AmbientLight{
 
 }
 
-class _PointLight extends _AmbientLight{
+export class _PointLight extends _AmbientLight{
     _attenuation;
     _diffuseMultiply = vec4(1,1,1,1)
     _specularMultiply = vec4(1,1,1,1)
@@ -107,7 +107,7 @@ class _PointLight extends _AmbientLight{
     }
 }
 
-class _SpotLight extends _PointLight{
+export class _SpotLight extends _PointLight{
     angle;
     /**
      * 

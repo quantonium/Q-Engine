@@ -1,7 +1,7 @@
 /**
  * something in 3D space that can be attached to other primitives
  */
-class Primitive {
+export class Primitive {
 	//Location of the primitive
 	transform = { pos: vec3(), rot: Quaternion(0, 1, 0, 0), scl: vec3() };
 

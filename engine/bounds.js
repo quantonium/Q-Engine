@@ -11,7 +11,7 @@ _bounds = []
  * extremely rough class representing visibility Bounds for an Object.
  * Todo: implement a proper transform so that this class can be used for collision bounds
  */
-class Bounds {
+export class Bounds {
 	//constant bound types
 	static RECT = "rect"
 	static SPHERE = "sphere"
