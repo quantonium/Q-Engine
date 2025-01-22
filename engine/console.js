@@ -28,7 +28,7 @@ function bufferedConsoleLog(s) {
 
 export function _bufferedConsoleTick() {
 	_consoleBufferLock = true
-	var tmp = [...this._consoleBuffer]
+	var tmp = [..._consoleBuffer]
 	_consoleBuffer = []
 	var r = _removedMessages
 	_removedMessages = 0
