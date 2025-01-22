@@ -196,7 +196,7 @@ export class Engine {
 				Q._gl.flush();
 				Q._render();
 
-			})
+			}).bind(this)
 			.catch((err) => { alert(err); console.error(err); })
 
 	}
