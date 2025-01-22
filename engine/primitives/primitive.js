@@ -1,6 +1,6 @@
 "use strict";
 
-import { mult, add, subtract, vec3, scale, inverse4, equal } from "../common/MVnew.js";
+import { mult, add, translate, subtract, vec3, scale, inverse4, equal } from "../common/MVnew.js";
 import { rotateAbout, addRotation, quatToMat4, Quaternion, invQuat, eulerToQuat, mat4ToTransform, quatEqual } from "../common/helpers-and-types.js";
 
 /**
