@@ -16,7 +16,6 @@ class Engine {
 	//if true, sets the viewport size to the canvas size every tick, in case the html element is resized
 	setViewportSizeToCanvasSize = true;
 
-	_fisqrt = {y: new Float32Array( 1 ), i: null}
 	////DO-NOT-TOUCH VARIABLES (updated constantly in the engine)
 	_time = 0;
 	_id = 0;

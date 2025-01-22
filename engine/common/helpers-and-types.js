@@ -3,7 +3,10 @@
 import {vec3, vec4, mult, add, cross, length, subtract, normalize, dot, radians, mat4, mat3} from "./MVnew.js"
 
 //from https://gist.github.com/jhermsmeier/2269511
-//Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays in globals.js _fisqrt
+//Note: use 0x5fe6eb50c7aa19f9 as magic number if going to use 64 bit arrays
+
+let _fisqrt = {y: new Float32Array( 1 ), i: null}
+
 function _qSqrt(n, p=1) {
 
 	p = p || 1
