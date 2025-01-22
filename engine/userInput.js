@@ -68,10 +68,10 @@ export function _initInputs(userKeyFunction, userMouseFunction){
 }
 
 export function _tickUserInput(){
-	var l = this._keyBuffer.length
+	var l = _keyBuffer.length
 		for (var x = 0; x < l; x++)
-			this._userKeyFunction(_keyBuffer.shift())
-		l = this._mouseBuffer.length
+			_userKeyFunction(_keyBuffer.shift())
+		l = _mouseBuffer.length
 		for (var x = 0; x < l; x++)
-			this._userMouseFunction(_mouseBuffer.shift())
+			_userMouseFunction(_mouseBuffer.shift())
 }
