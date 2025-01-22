@@ -283,7 +283,7 @@ export class ScreenBuffer {
 
 			//TODO: cleanup
 			if (this._setupInfo.lightsArrayStr != null)
-				for (var i = 0; i < this.currentProgram._maxLightCount; i++) {
+				for (var i = 0; i < this.getWGLProgram().maxLightCount; i++) {
 					this._lightTypeArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, this._setupInfo.lightsArrayStr + "[" + i + "].type"))
 					if (this._lightTypeArrayLoc == -1) alert(this._setupInfo.lightsArrayStr + ": unknown/invalid shader location (check that this points to an array of lights containing the necessary fields.)");
 					this._lightLocArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, this._setupInfo.lightsArrayStr + "[" + i + "].locationW"))
@@ -424,7 +424,7 @@ export class ScreenBuffer {
 		if (this._lightIndLoc.isValid) {
 			this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
 			getLights().forEach((l) => {
-				if (l != null && x < _maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this._bufferMask) != 0)) {
+				if (l != null && x < this.getWGLProgram().maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this._bufferMask) != 0)) {
 					x++;
 					this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
 					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([l._type]))
@@ -447,13 +447,13 @@ export class ScreenBuffer {
 
 					}
 					this._gTarget.uniform1iv(this._lightNegativeArrayLoc[x], new Int32Array([l._handleNegative]))
-				} else if (x >= _maxLightCount - 1 && l != null && l._enabled) {
-					_bufferedConsoleLog("WARNING: More than " + _maxLightCount + " used, light with ID " + l._id + " will not be visible.")
+				} else if (x >= this.getWGLProgram().maxLightCount - 1 && l != null && l._enabled) {
+					_bufferedConsoleLog("WARNING: More than " + this.getWGLProgram().maxLightCount + " used, light with ID " + l._id + " will not be visible.")
 				} else if (l._lightMask & this._bufferMask == 0) {
 					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
 				}
 			})
-			for (x++; x < _maxLightCount && x < this._lightTypeArrayLoc.length; x++)
+			for (x++; x < this.getWGLProgram().maxLightCount && x < this._lightTypeArrayLoc.length; x++)
 				this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
 		}
 	}
