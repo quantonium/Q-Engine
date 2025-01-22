@@ -1,4 +1,4 @@
-#Q Engine
+# Q Engine
 
 Q engine, or Qeng, is an open source WebGL 3D game engine in active development. The engine started as a final project for an intro to computer graphics class, and is since being updated with the goal of developing a highly versatile 3D engine, providing developers a wide range of capabilities to make 3D games and programs, designed in a modular manner intended to ease development.
 
@@ -9,7 +9,7 @@ See the examples folder for examples on how to integrate into your own website.
 
 Tldr: add into the header your own JS code such as userCode.js in the examples. In userCode, import Q from /engine/engine.js. Define some functions of your own, such as mouse or keyboard events, or a tick function- build a game or what not! Finally, call Q.engineInit(...) filling in the necessary parameters based on your HTML and your user code, and the engine will begin running!
 
-##Current features:
+## Current features:
 
 *   Dynamic mesh updating- modify the location of any number of points in any mesh in real time
 *   Material system- utilize PBR textures to create realistic materials, or specify parameters for many unique material types (emissive, transparent, specular and diffusive, unlit)
@@ -23,7 +23,7 @@ Tldr: add into the header your own JS code such as userCode.js in the examples. 
 
   
 
-##Future/in development features:
+## Future/in development features:
 
 *   Shadow mapping implemented with 3D textures
 *   Simplified shader swapping mechanics for more customized materials and per-camera postprocessing effects and/or alternate vertex shading
