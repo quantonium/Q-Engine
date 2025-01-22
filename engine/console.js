@@ -5,10 +5,10 @@
  */
 
 ////DEBUG CONSOLE VARS
-_consoleBuffer = []
-_consoleBufferLock = false
-_removedMessages = 0
-_maxConsoleBuffer = 1000
+let _consoleBuffer = []
+let _consoleBufferLock = false
+let _removedMessages = 0
+let _maxConsoleBuffer = 1000
 
 function bufferedConsoleLog(s) {
 	if (_consoleBufferLock)

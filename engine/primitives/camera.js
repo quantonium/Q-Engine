@@ -3,12 +3,11 @@
 import {Primitive} from "./primitive.js"
 import {SolidColorNoLighting} from "../material.js"
 
-_cameras = [];
-
 /**
  * representation of a view, targeting an (optional) buffer
  */
 export class Camera extends Primitive {
+	static _cameras = [];
 
 	//Debug point info to feed into opengl for manual rendering
 	debugPoints = []
@@ -184,8 +183,12 @@ export class Camera extends Primitive {
 		this.updateCameraView(fov, aspect, orthographic, range)
 		_cameras.push(this);
 	}
+
+	getCameras() {
+		return Camera._cameras
+	}
 }
 
 export function getCameras(){
-	return _cameras;
+	return Camera._cameras;
 }

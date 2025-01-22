@@ -2,9 +2,9 @@
 
 import {Primitive} from "./primitive.js"
 
-_lights = [];
-
 export class AmbientLight extends Primitive{
+    static _lights = [];
+
     //light's emission color
     color;
 
@@ -50,6 +50,10 @@ export class AmbientLight extends Primitive{
     destroyLight(){
         _lights[this._id] = null;
         delete this;
+    }
+
+    static getLights(){
+        return AmbientLight._lights
     }
 }
 
@@ -123,5 +127,5 @@ export class SpotLight extends PointLight{
 }
 
 export function getLights() {
-    return _lights;
+    return AmbientLight._lights;
 }

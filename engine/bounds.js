@@ -5,13 +5,13 @@ import {vec3to4} from "./common/helpers-and-types.js"
 
 import {getSphere, getRect} from "./geometry.js"
 
-_bounds = []
-
 /**
  * extremely rough class representing visibility Bounds for an Object.
  * Todo: implement a proper transform so that this class can be used for collision bounds
  */
 export class Bounds {
+	static _bounds = []
+
 	//constant bound types
 	static RECT = "rect"
 	static SPHERE = "sphere"
@@ -98,4 +98,12 @@ export class Bounds {
 		}
 		return r
 	}
+
+	static getBounds() {
+		return Bounds._bounds
+	}
+}
+
+export function getBounds() {
+	return Bounds._bounds
 }

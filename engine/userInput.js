@@ -6,12 +6,12 @@ import {vec2, vec3, inverse, mult} from "./common/MVnew.js"
 //and sets up key and mouse bindings to be used with the user defined functions.
 
 ////USER INPUT
-_keyBuffer = [];
-_mouseBuffer = []
+let _keyBuffer = [];
+let _mouseBuffer = []
 
 //USER DEFINED INPUT FUNCTIONS
-_userKeyFunction = function(e){}
-_userMouseFunction = function(e){}
+let _userKeyFunction = function(e){}
+let _userMouseFunction = function(e){}
 
 /**
  * gets mouse position relative to target canvas, in a scale of -1 to 1

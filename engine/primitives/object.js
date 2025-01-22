@@ -4,13 +4,14 @@ import {Primitive} from "./primitive.js"
 
 import { newID} from "../common/helpers-and-types.js";
 
-_objects = new Map();
+
 
 /**
  * 3D _Primitive containing material data, coordinate data, and Bounds
  * Note: For attached primitives to Object, if you want to attach a Primitive to a point, you must set the Primitive's transform to the point location manually.
  */
 export class Object extends Primitive {
+	static _objects = new Map();
 
 	//Indicates what materials to render ot which face
 	drawInfo = []
@@ -147,8 +148,12 @@ export class Object extends Primitive {
 			this.transform.scl != this._prevTransform.scl)
 			
 	}*/
+
+	getObjects() {
+		return Object._objects
+	}
 }
 
 export function getObjects() {
-	return _objects
+	return Object._objects
 }
