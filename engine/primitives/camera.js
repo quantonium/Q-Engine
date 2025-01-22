@@ -161,7 +161,7 @@ export class Camera extends Primitive {
 		}
 
 		if(changed || this._currentProjMat == null)
-			this._currentProjMat = this._getProjMat()
+			this._currentProjMat = this.getProjMat()
 		
 	}
 
