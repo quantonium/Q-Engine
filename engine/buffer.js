@@ -73,7 +73,7 @@ class _uniformLocation {
 export class ScreenBuffer {
 	static _buffers = [];
 
-	getBuffers() {
+	static getBuffers() {
 		return ScreenBuffer._buffers
 	}
 

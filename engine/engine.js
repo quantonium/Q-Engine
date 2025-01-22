@@ -86,11 +86,11 @@ class Engine {
 
 	_render(time) {
 		for (var i = 0; i < this._buffers.length; i++)
-			this._buffers[i]._beginRender();
+			ScreenBuffer.getBuffers()[i]._beginRender();
 		for (var i = 0; i < this._cameras.length; i++)
-			Cameras._cameras[i]._pushToBuffers();
+			getCameras()[i]._pushToBuffers();
 		for (var i = 0; i < this._buffers.length; i++)
-			this._buffers[i]._applyPostProcessToScene();
+			ScreenBuffer.getBuffers()[i]._applyPostProcessToScene();
 
 		this._requestId = requestAnimationFrame(this._render);
 	}
