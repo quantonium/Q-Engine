@@ -2,8 +2,8 @@
 "use strict";
 var _defaultAspect = 16 / 9
 var _maxLightCount = 64 //NOTE: THIS VALUE MUST MATCH THE SIZE OF THE LIGHT ARRAYS IN THE SHADERS
-var _fisqrt = {y: new Float32Array( 1 ), i: null}
-_fisqrt.i = new Int32Array( _fisqrt.y.buffer )
+var _fisqrt = {y: new Float32Array( 1 ), i: null} //used for fast inverse sqrt
+_fisqrt.i = new Int32Array( _fisqrt.y.buffer ) //used for fast inverse sqrt
 ////DO-NOT-TOUCH VARIABLES (updated constantly in the engine)
 var _time = 0;
 var _id = 0;

@@ -27,6 +27,9 @@ uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 uniform vec3 inCameraPosW;
 
+uniform highp uint time; //total time since level load
+uniform highp uint frameTime; //time between current and previous frame; delta time
+
 //varying vec3 normal;
 out vec2 texCoord;
 //varying vec3 view;
@@ -38,6 +41,8 @@ out vec3 cameraPosT;
 out vec3 cameraPosW;
 out vec3 normalT;
 out vec3 normalW;
+out vec3 positionW;
+out vec4 positionL; //includes depth + non-projected camera scaled XY adjusted to viewMatrix
 
 out mat3 TBN;
 flat out int matIndex;
@@ -47,11 +52,11 @@ out vec4 matProp[MAT_PROP_COUNT];
 void main(void) {
     vec4 coordsW = modelMatrix * (vec4(inPointsL, 1.) * vec4(1,1,-1,1)) * vec4(1, 1, -1, 1);
     gl_Position = projMatrix * viewMatrix * coordsW * (vec4(1.,1.,1.,1.) / vec4(inCameraScale, 1.));
-    vec3 T = normalize((normalMatrix*vec4(inTangentL, 0.)).xyz*vec3(-1,1,-1));
+    vec3 T = normalize((normalMatrix*vec4(inTangentL, 0.)).xyz*vec3(-1,1,-1)); //tangent
     //vec3 T = normalize(inTangent);
-    vec3 N = normalize((normalMatrix*(vec4(inNormalL, 0.) * vec4(1,1,-1,1))).xyz*vec3(1,1,-1));
+    vec3 N = normalize((normalMatrix*(vec4(inNormalL, 0.) * vec4(1,1,-1,1))).xyz*vec3(1,1,-1)); //normal
     //vec3 N = normalize(inNormal);
-    T=normalize(T - dot(T, N) * N);
+    T=normalize(T - dot(T, N) * N); //bitangent
     vec3 B = cross(N, T)*vec3(-1, -1,-1);
 
     TBN = transpose(mat3(T, B, N));
@@ -59,6 +64,10 @@ void main(void) {
     //position = tsMatrix*(uModelViewMatrix*aPosition).xyz;
     //view = tsMatrix*vec3(0.0, 0.0, 0.0);
     //normal = tsMatrix*N;
+    positionW = coordsW.xyz;
+    vec4 tmp = (viewMatrix * coordsW * (vec4(1.,1.,1.,1.) / vec4(inCameraScale, 1.)));
+    positionL = vec4(tmp.r, tmp.g, length(inCameraPosW.xyz-coordsW.xyz), tmp.a);
+
     positionT = TBN*(coordsW.xyz);
     positionVT = TBN * (viewMatrix * coordsW).xyz;
     //positionS = gl_Position;

@@ -123,7 +123,7 @@ function _engineInit(defaultCanvas, userInit, userTick, userKey = function (e) {
 		setTimeout(function () {
 			_queueNewTick(_tick);
 		}, 100);
-		_gl.flush();
+		//_gl.flush();
 		_render();
 		
 	})

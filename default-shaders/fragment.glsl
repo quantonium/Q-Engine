@@ -1,8 +1,7 @@
 #version 300 es
 precision highp float;
 
-const int LIGHT_COUNT=16; //ensures unifrom count is less than WebGL min
-const int SHADOWED_LIGHT_COUNT = 16; //1 light for each shadow map. Might want to perform shadows in supplementary stage.
+const int LIGHT_COUNT=64;
 const int MAT_PROP_COUNT=7;
 const float ATTENUATION_DROPOFF=.01;
 in vec2 texCoord;
@@ -14,6 +13,8 @@ in vec3 cameraPosT;
 in vec3 cameraPosW;
 in vec3 normalT;
 in vec3 normalW;
+in vec3 positionW;
+in vec4 positionL;
 
 flat in int matIndex;
 in vec4 matProp[MAT_PROP_COUNT];
@@ -22,20 +23,14 @@ in vec4 matProp[MAT_PROP_COUNT];
 layout(location=0) out vec4 fScene; //final scene output with lights and colors (no postprocessing)
 layout(location=1) out vec4 fDepth; //depth map
 layout(location=2) out vec4 fNormal; //surface normals
-layout(location=3) out vec4 fPosition; //fragment coordinates
+layout(location=3) out vec4 fPosition; //fragment world coordinates
 layout(location=4) out vec4 fColor; //surface color * ambient multiply
 layout(location=5) out vec4 fDiffuse; //surface diffuse multiply
 layout(location=6) out vec4 fSpecular; //surface specular multiply
 layout(location=7) out vec4 fEmissive; //surface emissive color
 //attribute int matIndex; //default = 0, constant values; 1 = texture, constant values; -1 = unlit solid color
-
-//STRUCT SIZE: 
-//Currently: 10?
-//Optimized: 6
 struct light
 {
-	//lowp vec3 TypeNegHandlNegHandlAlt
-	//vec3 AngleAttenShini
 	lowp int type;//0=empty (default),  1=ambient, 2=directional, 3=point, 4=spot
 	vec3 locationW, directionW;//direction ignored if not spotlight; location ignored if ambient or directional
 	float angle;//spotlight only
@@ -51,13 +46,19 @@ struct light
 
 uniform light lights[LIGHT_COUNT];
 uniform int maxLightIndex;
+uniform highp uint time; //total time since level load
+uniform highp uint frameTime; //time between current and previous frame; delta time
 
 uniform sampler2D baseImage;
 uniform sampler2D normalMap;
 uniform sampler2D depthMap;
-uniform sampler2D diffuseMap;//light multiplier
-uniform sampler2D roughnessMap;//light multiplier
-uniform sampler2D emissiveImage;//emissive
+uniform sampler2D diffuseMap; //light multiplier
+uniform sampler2D roughnessMap; //light multiplier
+uniform sampler2D emissiveImage; //emissive
+//uniform sampler3D shadowMaps; //depth maps for lights used for shadows. Format (w, u, v) is (lightNum, Uindex, Vindex)
+//Shadow maps are: in equirectangular format for point, See https://stackoverflow.com/questions/54101329/project-cubemap-to-2d-texture
+//2D orthographic for directional lights (with range defined upon shadow map generation)
+//spotlight: TODO
 
 //uniform sampler2D miscTextures[11];
 
@@ -96,6 +97,8 @@ struct sMat{
 	vec4 diffuse;
 	vec4 specular;
 };
+
+//texture getShadowMap()
 
 sMat getStandardLight(vec4 mp5, vec3 norm, vec3 pos, vec3 viewPos, bool tangentSpace){
 	sMat r;
@@ -270,7 +273,7 @@ vec4 standardMaterial(vec4 mp[MAT_PROP_COUNT], vec3 norm, vec3 pos, vec3 viewPos
 	fDiffuse = mp[1];
 	fColor = mp[0]*mp[3];
 	fEmissive = mp[4];
-	fDepth = gl_FragCoord;
+	//fDepth = 1.-positionL;
 	return vec4(max(tmp.r,0.),max(tmp.g,0.),max(tmp.b,0.),clamp(tmp.a,0.,1.));
 }
 
@@ -299,10 +302,11 @@ vec4 standardImage(vec4 mp[MAT_PROP_COUNT], vec3 pos, vec2 tx, vec3 viewPos, boo
 }
 
 void main(void){
-	fPosition = vec4(positionT, 1);
+	fPosition = vec4(positionW, 1);
 	vec2 txc = (texCoord*vec2(matProp[6][0], matProp[6][1]))+vec2(matProp[6][2], matProp[6][3]);
 	float d = 1.-texture(depthMap, txc).r;
 	//vec2 txc = texCoord;
+	fDepth = positionL;
 	switch(matIndex){
 		case -3: //debug- draw depth
 		fScene = fDepth;
@@ -311,7 +315,7 @@ void main(void){
 		fSpecular = matProp[2];
 		fDiffuse = matProp[1];
 		fEmissive = matProp[4];
-		fDepth = gl_FragCoord;
+		//fDepth = gl_FragCoord;
 		break;
 		case -2: //debug- draw texcoord
 		fScene = vec4(txc, 0., 1.);
@@ -320,7 +324,7 @@ void main(void){
 		fSpecular = matProp[2];
 		fDiffuse = matProp[1];
 		fEmissive = matProp[4];
-		fDepth = gl_FragCoord;
+		//fDepth = gl_FragCoord;
 		break;
 		case -1: //nodraw. Doesn't even put anything into postprocess
 		return;
@@ -328,24 +332,24 @@ void main(void){
 		case 1: //no texture
 		fScene=standardMaterial(matProp, normalT, positionT, cameraPosT, true);
 		fNormal = vec4(normalT, 1);
-		fDepth = gl_FragCoord;
+		//fDepth = gl_FragCoord;
 		break;
 
 		case 2: //parallaxed texture
 		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[5][1], matProp[5][2], matProp[5][3]);
-		fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
+		//fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
 		//break;
 
 		case 3: //texture, no parallax
 		fScene = standardImage(matProp, positionT, txc, cameraPosT, true);
 		if(matIndex == 3){
-			fDepth = gl_FragCoord;
+			//fDepth = gl_FragCoord;
 		}
 		break;
 
 		case 4: //unlit texture, parallax
 		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[5][1], matProp[5][2], matProp[5][3]);
-		fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
+		//fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
 
 		case 5: //unlit texture, no parallax
 		fScene = texture(baseImage, txc) * matProp[0];
@@ -355,7 +359,7 @@ void main(void){
 		fEmissive = matProp[4];
 		if(matIndex == 5){
 			fNormal = vec4(normalT, 1);
-			fDepth = gl_FragCoord;
+			//fDepth = gl_FragCoord;
 		}
 		break;
 
@@ -366,7 +370,7 @@ void main(void){
 		fSpecular = matProp[2];
 		fDiffuse = matProp[1];
 		fEmissive = matProp[4];
-		fDepth = gl_FragCoord;
+		//fDepth = gl_FragCoord;
 		break;
 	}
 	

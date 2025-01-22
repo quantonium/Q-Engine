@@ -19,8 +19,16 @@ uniform highp uint frameTime; //time between current and previous frame; delta t
 in vec2 texCoords;
 out vec4 fColor;
 
+const int samples = 4;
+const float minDepth = .1;
+const float dist = 3.;
+const float scale = 50.;
+const vec4 fogColor = vec4(.5, .5, .25, 1.);
+const float minViewDist = 20.;
+const float maxViewDist = 50.;
+const float minViewHeight = 1.;
+const float maxViewHeight = 5.;
+
 void main(void){
-    vec4 t = texture(scene, texCoords);
-    //fColor = vec4(t.rgb, 1);
-    fColor = t;
+    fColor = mix(texture(scene,texCoords), mix(texture(scene,texCoords)*fogColor, fogColor, clamp(texture(depth, texCoords).z-maxViewDist, 0., 1.)), clamp(texture(depth, texCoords).z-minViewDist, 0., 1.));
 }

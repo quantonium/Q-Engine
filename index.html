@@ -2,75 +2,78 @@
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<meta content="width=device-width, initial-scale=1" name="viewport" />
-	<title>Qeng</title>
-	<link rel="stylesheet" href="../style.css" id="style" type="text/css">
-	<link rel="icon" href="../images/fish.png" id="icon" type="image/x-icon">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-	<script src="../headerGet.js"></script>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Qeng</title>
+  <link rel="stylesheet" href="../style.css" id="style" type="text/css">
+  <link rel="icon" href="../images/fish.png" id="icon" type="image/x-icon">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="../headerGet.js"></script>
 
 
 </head>
 
 <body>
-	<div id='headAndText'>
-	</div>
-	<div id="centerMenu">
-		<h1>Qeng demos</h1>
-		<hr>
-		<a href="https://andyman1222.github.io/engine/">If any demos aren't working here, please try running them on the beta website page instead.</a><br><br>
-		<iframe width="560" height="315" src="https://www.youtube.com/embed/-M2pmWM-bqA" title="YouTube video player"
-			frameborder="0"
-			allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-			allowfullscreen></iframe><br><br>
-		<a href="test/">test</a><br>
-		<a href="maze/">infinite maze</a><br>
-		<a href="ProgrammingAssignment4/">chess board</a><br>
-		<a href="ProgrammingAssignment6/">maze (no textures)</a><br>
-		<a href="ProgrammingAssignment7/">maze (textured, postprocess test)</a><br>
-		<a href="cake/">birthday cake</a>
-		<hr>
-		<h1>Information</h1>
-		<hr>
-		<p>Q engine, or Qeng, is an open source WebGL 3D game engine in active development.
-			The engine started as a final project for an intro to computer graphics class,
-			and is since being updated with the goal of developing a highly versatile 3D
-			engine, providing developers a wide range of capabilities to make 3D games and
-			programs, designed in a modular manner intended to ease development. <br><br>
-			Current features:
-		<ul>
-			<li>Dynamic mesh updating- modify the location of any number of points in any mesh in real time</li>
-			<li>Material system- utilize PBR textures to create realistic materials, or specify parameters for many
-				unique material types (emissive, transparent, specular and diffusive, unlit)</li>
-			<li>Sophisticated lighting- support currently for up to 64 lights, with customizable parameters to cast on
-				materials differently, and negative and translucent lighting</li>
-			<li>Postrpocess layer- supports 10+ buffer inputs</li>
-			<li>Object system- create parent-child relationships with 3D primitives to control multiple objects as one
-			</li>
-			<li>Gameplay update mechanics- tick-based updating with optional customizable functions to be called before
-				or after tick/graphics/input</li>
-			<li>Buffered input controls- Handle all inputs by the player in the order they arrive, not missing any
-				inputs</li>
-			<li>Separate graphics thread- Updates visuals independently from game logic</li>
-			<li>Camera system- swap between multiple cameras in the 3D environment, with orthographic and perspective
-				options, and customized scaling and FOV</li>
-		</ul>
-		<br>
-		<p>Future/in development features:</p>
-		<ul>
-			<li>Shadow mapping implemented with 3D textures</li>
-			<li>Simplified shader swapping mechanics for more customized materials and per-camera postprocessing effects
-				and/or alternate vertex shading</li>
-			<li>Collision hit/overlap detection system</li>
-			<li>Gradient skyboxes</li>
-			<li>UI layers with interaction</li>
-			<li>Documentation</li>
-			<li>3D model importing</li>
-			<li>Possibly even a proprietary GUI development environment</li>
-		</ul>
-		</p>
-	</div>
+  <div id='headAndText'>
+  </div>
+  <div id="centerMenu">
+    <h1>Qeng demos</h1>
+    <hr>
+    <p>NOTE: Qeng is currently in the process of migrating development to Quantonium. Some demos may be in an unstable state as preparations are made to support the engine open source with proper documentation and stability.</p>
+    <a href="https://andyman1222.github.io/engine/">If any demos aren't working here, please try running them on the beta website page instead.</a><br><br>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/-M2pmWM-bqA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe><br><br>
+    <a href="test/">test</a><br>
+    <a href="maze/">infinite maze</a><br>
+    <a href="ProgrammingAssignment4/">chess board</a><br>
+    <a href="ProgrammingAssignment6/">maze (no textures)</a><br>
+    <a href="ProgrammingAssignment7/">maze (textured, postprocess test)</a><br>
+    <a href="cake/">birthday cake</a><br>
+    <a href="test2/">(new!) another postprocess test using time</a>
+
+    <hr>
+<h1>Information</h1>
+<hr>
+<p>Q engine, or Qeng, is an open source WebGL 3D game engine in active development.
+The engine started as a final project for an intro to computer graphics class,
+and is since being updated with the goal of developing a highly versatile 3D
+engine, providing developers a wide range of capabilities to make 3D games and
+programs, designed in a modular manner intended to ease development. <br><br>
+Current features:
+</p><ul>
+<li>Dynamic mesh updating- modify the location of any number of points in any mesh in real time</li>
+<li>Material system- utilize PBR textures to create realistic materials, or specify parameters for many
+unique material types (emissive, transparent, specular and diffusive, unlit)</li>
+<li>Sophisticated lighting- support currently for up to 64 lights, with customizable parameters to cast on
+materials differently, and negative and translucent lighting</li>
+<li>Postrpocess layer- supports 10+ buffer inputs</li>
+<li>Object system- create parent-child relationships with 3D primitives to control multiple objects as one
+</li>
+<li>Gameplay update mechanics- tick-based updating with optional customizable functions to be called before
+or after tick/graphics/input</li>
+<li>Buffered input controls- Handle all inputs by the player in the order they arrive, not missing any
+inputs</li>
+<li>Separate graphics thread- Updates visuals independently from game logic</li>
+<li>Camera system- swap between multiple cameras in the 3D environment, with orthographic and perspective
+options, and customized scaling and FOV</li>
+</ul>
+<br>
+<p>Future/in development features:</p>
+<ul>
+<li>Shadow mapping implemented with 3D textures</li>
+<li>Simplified shader swapping mechanics for more customized materials and per-camera postprocessing effects
+and/or alternate vertex shading</li>
+<li>Collision hit/overlap detection system</li>
+<li>Gradient skyboxes</li>
+<li>UI layers with interaction</li>
+<li>Documentation</li>
+<li>3D model importing</li>
+<li>Possibly even a proprietary GUI development environment</li>
+</ul>
+  </div>
+  
+
+
+  </div>
 
 </body>
 

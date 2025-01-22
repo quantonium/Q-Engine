@@ -107,6 +107,12 @@ class _ScreenBuffer {
 	_cameraPosLoc;
 	_textureLoc = []
 	_cameraSclLoc;
+
+	_timeLoc;
+	_frameTimeLoc;
+
+	_postTimeLoc;
+	_postFrameTimeLoc;
 	
 	_currentProgram;
 	_postProcessProgram;
@@ -128,6 +134,9 @@ class _ScreenBuffer {
 	_inSetup = false;
 
 	_drawBuffers = [];
+
+	_lastFrameTime = 0;
+	_deltaFrameTime = 0;
 
 	_setupInfo = {
 		coordStr: null, matStr: null, matParamCount: null, matIndStr: null, texStr: null, texCount: null, postTexStr: null, postTexCount: null, projMatrixStr: null,
@@ -154,7 +163,10 @@ class _ScreenBuffer {
 		postTexCount = 8, projMatrixStr = "projMatrix", viewMatrixStr = "viewMatrix", normalMatrixStr = "normalMatrix",
 		modelMatrixStr = "modelMatrix", lightsArrayStr = "lights", lightsIndexStr = "maxLightIndex",
 		normalStr = "inNormalL", tanStr = "inTangentL", biTanStr = null, texCoordStr = "inTexCoord",
-		cameraPosStr = "inCameraPosW", cameraScaleStr = "inCameraScale", customSetupFunction = function (gTarget, program) { },
+		cameraPosStr = "inCameraPosW", cameraScaleStr = "inCameraScale",
+		timeStr = "time", frameTimeStr = "frameTime",
+		postTimeStr = "time", postFrameTimeStr = "frameTime",
+		customSetupFunction = function (gTarget, program) { },
 		bufferMask = 0x1) {
 		this._gTarget = gTarget;
 		this._program = program;
@@ -166,7 +178,7 @@ class _ScreenBuffer {
 			coordStr: coordStr, matStr: matStr, matParamCount: matParamCount, matIndStr: matIndStr, texStr: texStr, texCount: texCount, postTexStr: postTexStr, postTexCount: postTexCount,
 			projMatrixStr: projMatrixStr, viewMatrixStr: viewMatrixStr, normalMatrixStr: normalMatrixStr, modelMatrixStr: modelMatrixStr,
 			lightsArrayStr: lightsArrayStr, lightsIndexStr: lightsIndexStr, normalStr: normalStr, tanStr: tanStr, biTanStr: biTanStr, texCoordStr: texCoordStr,
-			cameraPosStr: cameraPosStr, cameraScaleStr: cameraScaleStr, customSetupFunction: customSetupFunction
+			cameraPosStr: cameraPosStr, cameraScaleStr: cameraScaleStr, timeStr: timeStr, frameTimeStr: frameTimeStr, postTimeStr: postTimeStr, postFrameTimeStr: postFrameTimeStr, customSetupFunction: customSetupFunction
 		}
 
 		_buffers.push(this);
@@ -243,6 +255,8 @@ class _ScreenBuffer {
 		this._lightIndLoc = new _uniformLocation(this._setupInfo.lightsIndexStr, this._gTarget, shaderProgram);
 		this._cameraPosLoc = new _uniformLocation(this._setupInfo.cameraPosStr, this._gTarget, shaderProgram);
 		this._cameraSclLoc = new _uniformLocation(this._setupInfo.cameraScaleStr, this._gTarget, shaderProgram);
+		this._timeLoc = new _uniformLocation(this._setupInfo.timeStr, this._gTarget, shaderProgram);
+		this._frameTimeLoc = new _uniformLocation(this._setupInfo.frameTimeStr, this._gTarget, shaderProgram);
 
 		//TODO: cleanup
 		if (this._setupInfo.lightsArrayStr != null)
@@ -261,7 +275,7 @@ class _ScreenBuffer {
 				this._lightAltNegativeArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, this._setupInfo.lightsArrayStr + "[" + i + "].negativeHandlerAlt"))
 				//this._lightsTypeArrayLoc.push(this._gTarget.getUniformLocation(shaderProgram.program, lightsArrayStr+"["+i+"].lightmask"))
 			}
-
+		
 		//finalize initial buffer stup
 		this._bufLimit = (this._gTarget.MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS > this._gTarget.MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS ?
 			this._gTarget.MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS :
@@ -273,6 +287,10 @@ class _ScreenBuffer {
 		this._gTarget.useProgram(postShaderProgram.program)
 		this._currentProgram = postShaderProgram;
 		this._outBuffer = this._gTarget.createFramebuffer();
+
+		//setup post shader locations
+		this._postTimeLoc = new _uniformLocation(this._setupInfo.postTimeStr, this._gTarget, postShaderProgram);
+		this._postFrameTimeLoc = new _uniformLocation(this._setupInfo.postFrameTimeStr, this._gTarget, postShaderProgram);
 
 		if (this._setupInfo.postTexStr != null) {
 			this._postTexCount = this._setupInfo.postTexCount;
@@ -364,6 +382,8 @@ class _ScreenBuffer {
 		this._normals = []
 		//this._bitangents = []
 		this._tangents = []
+		this._deltaFrameTime = _time - this._lastFrameTime;
+		this._lastFrameTime = _time;
 	}
 
 	_setViewMatrix(v, p, s) {
@@ -495,6 +515,9 @@ class _ScreenBuffer {
 		if (this._points.length > 0) {
 			this._customPreRenderFunction(this._gTarget, this._program);
 
+			if(this._timeLoc.location != null) this._gTarget.uniform1ui(this._timeLoc.location, this._lastFrameTime);
+			if(this._frameTimeLoc.location != null) this._gTarget.uniform1ui(this._frameTimeLoc.location, this._deltaFrameTime);
+
 			this._posBuffer.loadBufferData(this._gTarget, 
 				this._gTarget.ARRAY_BUFFER, 
 				this._gTarget.STATIC_DRAW, 
@@ -594,6 +617,9 @@ class _ScreenBuffer {
 		this._gTarget.useProgram(this._postProcessProgram.program)
 		this._gTarget.depthFunc(this._gTarget.LESS)
 		this._gTarget.bindFramebuffer(this._gTarget.FRAMEBUFFER, null);
+
+		if(this._postTimeLoc.location != null) this._gTarget.uniform1ui(this._postTimeLoc.location, this._lastFrameTime);
+			if(this._postFrameTimeLoc.location != null) this._gTarget.uniform1ui(this._postFrameTimeLoc.location, this._deltaFrameTime);
 
 		for(var i = 0; i < this._postTexCount; i++){
 			this._gTarget.activeTexture(this._gTarget.TEXTURE0+i);
