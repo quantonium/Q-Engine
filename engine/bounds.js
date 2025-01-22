@@ -1,8 +1,7 @@
 "use strict"
 
-import {vec3, mult, subtract} from "./common/MVnew.js"
+import {vec3, mult, subtract, add, vec4} from "./common/MVnew.js"
 import {vec3to4} from "./common/helpers-and-types.js"
-
 import {getSphere, getRect} from "./geometry.js"
 
 
