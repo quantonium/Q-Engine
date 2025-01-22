@@ -66,15 +66,15 @@ export class Engine {
 	}
 
 	gl(){
-		return Q._gl;
+		return this._gl;
 	}
 
 	getDefaultBuffer(){
-		return Q._bData;
+		return this._bData;
 	}
 
 	time(){
-		return Q._time
+		return this._time
 	}
 
 	_render(time) {
@@ -85,7 +85,7 @@ export class Engine {
 		for (var i = 0; i < ScreenBuffer.getBuffers().length; i++)
 			ScreenBuffer.getBuffers()[i]._applyPostProcessToScene();
 
-		Q._requestId = requestAnimationFrame(Q._render);
+		this._requestId = requestAnimationFrame(this._render);
 	}
 
 	_queueNewTick(f) {
@@ -97,52 +97,52 @@ export class Engine {
 		getLights().forEach((o) => (o._postTick(delta, time)))
 		getObjects().forEach((o) => (o._postTick(delta, time)))
 		getCameras().forEach((o) => (o._postTick(delta, time)))
-		if(Q.setViewportSizeToCanvasSize){
-			Q._bData.viewportSize.x = Q.canvas.width
-			Q._bData.viewportSize.y = Q.canvas.height
+		if(this.setViewportSizeToCanvasSize){
+			this._bData.viewportSize.x = this.canvas.width
+			this._bData.viewportSize.y = this.canvas.height
 		}
 	}
 
 	_tick(prevTime) {
 		var delta = Date.now() - prevTime;
-		Q._time += delta;
-		getLights().forEach((o) => (o._preTick(delta, Q._time)))
-		getObjects().forEach((o) => (o._preTick(delta, Q._time)))
-		getCameras().forEach((o) => (o._preTick(delta, Q._time)))
+		this._time += delta;
+		getLights().forEach((o) => (o._preTick(delta, this._time)))
+		getObjects().forEach((o) => (o._preTick(delta, this._time)))
+		getCameras().forEach((o) => (o._preTick(delta, this._time)))
 		_tickUserInput()
-		if (Q._tickEnabled) {
-			getLights().forEach((o) => (o._onTick(delta, Q._time)))
-			getObjects().forEach((o) => (o._onTick(delta, Q._time)))
-			getCameras().forEach((o) => (o._onTick(delta, Q._time)))
-			Q._userTickFunction(delta, Q._time)
+		if (this._tickEnabled) {
+			getLights().forEach((o) => (o._onTick(delta, this._time)))
+			getObjects().forEach((o) => (o._onTick(delta, this._time)))
+			getCameras().forEach((o) => (o._onTick(delta, this._time)))
+			this._userTickFunction(delta, this._time)
 		}
 
-		Q._consoleBufferLock = true
-		var tmp = [...Q._consoleBuffer]
-		Q._consoleBuffer = []
-		var r = Q._removedMessages
-		Q._removedMessages = 0
-		Q._consoleBufferLock = false
+		this._consoleBufferLock = true
+		var tmp = [...this._consoleBuffer]
+		this._consoleBuffer = []
+		var r = this._removedMessages
+		this._removedMessages = 0
+		this._consoleBufferLock = false
 		tmp.forEach(function (i) {
 			console.log(i)
 		})
 		if (r > 0) console.log(r + " messages removed.\n")
 
-		_postTickFunction(delta, Q._time)
-		Q._queueNewTick(Q._tick);
+		_postTickFunction(delta, this._time)
+		this._queueNewTick(this._tick);
 	}
 
 	_setDefaultGraphics(vertexPath, fragmentPath, postVertexPath, postFragmentPath) {
 		//  Load shaders and initialize attribute buffers
-		Q._defaultProgram = new ShaderProgram(Q._gl, vertexPath, fragmentPath);
-		Q._postProcessProgram = new ShaderProgram(Q._gl, postVertexPath, postFragmentPath);
+		this._defaultProgram = new ShaderProgram(this._gl, vertexPath, fragmentPath);
+		this._postProcessProgram = new ShaderProgram(this._gl, postVertexPath, postFragmentPath);
 
-		Q._bData = new ScreenBuffer(Q._gl, Q._defaultProgram, Q._postProcessProgram, new vec2(Q.canvas.width, Q.canvas.height));
+		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram, new vec2(this.canvas.width, this.canvas.height));
 
-		Q._mainCamera = new Camera(Q._bData);
+		this._mainCamera = new Camera(this._bData);
 
-		Q._coords = new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, [{
-			pointIndex: [0, 1, 2, 3, 4, 5], matIndex: [0, 0, 1, 1, 2, 2], texCoords: [vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1)], type: Q._gl.LINES,
+		this._coords = new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, [{
+			pointIndex: [0, 1, 2, 3, 4, 5], matIndex: [0, 0, 1, 1, 2, 2], texCoords: [vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1), vec2(0, 0), vec2(1, 1)], type: this._gl.LINES,
 			normals: [vec3(-1, 0, 0), vec3(1, 0, 0), vec3(0, -1, 0), vec3(0, 1, 0), vec3(0, 0, -1), vec3(0, 0, 1)],
 			tangents: [vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0, 1), vec3(0, 0, -1), vec3(1, 0, 0), vec3(-1, 0, 0)], textureIndex: -1, bufferMask: 0x1, cameraMask: 0x1, lightMask: 0x1
 		}],
@@ -153,50 +153,50 @@ export class Engine {
 	async _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
 		return new Promise((resolve, reject) => {
 
-			Q.canvas = document.getElementById(defaultCanvas);
+			this.canvas = document.getElementById(defaultCanvas);
 			var ratio = window.devicePixelRatio || 1;
-			Q.canvas.width = ratio * Q.canvas.clientWidth;
-			Q.canvas.height = ratio *Q.canvas.clientHeight;
-			Q.canvas.addEventListener("webglcontextlost", function (event) {
+			this.canvas.width = ratio * this.canvas.clientWidth;
+			this.canvas.height = ratio *this.canvas.clientHeight;
+			this.canvas.addEventListener("webglcontextlost", function (event) {
 				event.preventDefault();
-				cancelAnimationFrame(Q._requestId);
+				cancelAnimationFrame(this._requestId);
 				alert("WebGL context lost. Please reload the page.")
 			}, false);
-			/*Q.canvas.addEventListener("webglcontextrestored", function(event) {
+			/*this.canvas.addEventListener("webglcontextrestored", function(event) {
 				_setDefaultGraphics();
-				Q._complexTextures.forEach((o) => {
+				this._complexTextures.forEach((o) => {
 					o._init();
 				})
 				_render();
 			}, false);*/
-			Q._gl = Q.canvas.getContext('webgl2');
-			if (!Q._gl) {
-				reject("WebGL 2.0 isn't available");
+			this._gl = this.canvas.getContext('webgl2');
+			if (!this._gl) {
+				reject("WebGL 2.0 isn't available").bind(this);
 			}
 			var warn = "";
-			Q._setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
-			resolve();
-		}).bind(this);
+			this._setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
+			resolve().bind(this);
+		});
 	}
 
 	//Initializes the engine, run Q function first and foremost to start ticking
 	engineInit(defaultCanvas, userInit, userTick, userKey = function (e) { }, userMouse = function (e) { }, defaultVertex = "../default-shaders/vertex.glsl", defaultFragment = "../default-shaders/fragment.glsl",
 		defaultPostVertex = "../default-shaders/postprocess-vertex.glsl", defaultPostFragment = "../default-shaders/postprocess-fragment.glsl", userPostTick = function (delta, time) { }) {
-		Q._userPostTickFunction = userPostTick;
+		this._userPostTickFunction = userPostTick;
 		_initInputs(userKey, userMouse)
-		Q._initDefaultGraphics(defaultCanvas, defaultVertex, defaultFragment, defaultPostVertex, defaultPostFragment)
+		this._initDefaultGraphics(defaultCanvas, defaultVertex, defaultFragment, defaultPostVertex, defaultPostFragment)
 			.then(() => {
 				//delay initial running of code by 1s to allow stuff to load in
 				//TODO: more dynamic wait to load
 				
-				Q._userInitFunction();
+				this._userInitFunction();
 				setTimeout(function () {
-					Q._queueNewTick(Q._tick);
+					this._queueNewTick(this._tick);
 				}, 100);
-				Q._gl.flush();
-				Q._render();
+				this._gl.flush();
+				this._render();
 
-			})
+			}.bind(this))
 			.catch((err) => { alert(err); console.error(err); })
 
 	}
