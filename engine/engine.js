@@ -176,7 +176,7 @@ export class Engine {
 			var warn = "";
 			Q._setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
 			resolve();
-		});
+		}).bind(this);
 	}
 
 	//Initializes the engine, run Q function first and foremost to start ticking
@@ -196,7 +196,7 @@ export class Engine {
 				Q._gl.flush();
 				Q._render();
 
-			}).bind(this)
+			})
 			.catch((err) => { alert(err); console.error(err); })
 
 	}
