@@ -1,7 +1,7 @@
 "use strict";
 
 //Wrapper for openGL shader program, working with a vertex and fragment shader
-export class shaderProgram{
+export class ShaderProgram{
 
     program;
 

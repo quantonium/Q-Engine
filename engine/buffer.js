@@ -3,7 +3,7 @@
 _buffers = [];
 
 /**
- * TODO
+ * An attribute location for a given buffer, mapping name to wgl location
  */
 class _bufferSet {
 	buffer; //WebGL buffer
@@ -43,7 +43,7 @@ class _bufferSet {
 }
 
 /**
- * TODO
+ * A shader uniform location for a given buffer, mapping name to wgl location
  */
 class _uniformLocation {
 	location;
@@ -66,10 +66,11 @@ class _uniformLocation {
 }
 
 /**
- * buffer _Object representing all data necessary for any output buffer/view
- * A buffer can swap shader programs but expects the shader support all the standard inputs/outputs
+ * buffer representing all data necessary for any output buffer/view
+ * A buffer can swap shader programs but expects the shader support all the standard inputs/outputs.
+ * In most cases, it is unnecessary to create your own buffer as the default buffer provides rendering and postprocess.
  */
-class _ScreenBuffer {
+export class ScreenBuffer {
 	_matParams = []
 	_matIndicies = []
 	_points = []
@@ -198,7 +199,7 @@ class _ScreenBuffer {
 		this._tanBuf = new _bufferSet(this._setupInfo.tanStr, this._gTarget, shaderProgram);
 		this._biTanBuf = new _bufferSet(this._setupInfo.biTanStr, this._gTarget, shaderProgram);
 		
-		//TODO: cleanup lines 160-197?
+		//TODO: cleanup lines below
 		if (this._setupInfo.matStr != null) {
 			this._matIndBuf = this._gTarget.createBuffer();
 			this._matParamCount = this._setupInfo.matParamCount;

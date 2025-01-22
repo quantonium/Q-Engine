@@ -25,7 +25,7 @@ export class Camera extends Primitive {
 	//If true, shows the Bounds of all objects
 	showBounds = false
 
-
+	//If true, camera will render engine-only geometry such as the axes
 	renderEngine = false
 	noTexture = false
 	noParallax = false
@@ -40,14 +40,14 @@ export class Camera extends Primitive {
 	range = [.1, 200000]
 	currentProjMat = null
 
-	_clearDebug() {
+	clearDebug() {
 		this.debugPoints = []
 		this.debugColors = []
 		this.debugTypes = []
 		this.debugOffsets = []
 	}
 
-	_getProjMat() {
+	getProjMat() {
 		return this.ortho ? ortho(-this._fov / 2, this._fov / 2, -(this._fov / 2) * this._aspect, (this._fov / 2) * this._aspect, this._range[0], this._range[1]) : perspective(this._fov, this._aspect, this._range[0], this._range[1])
 	}
 
@@ -82,16 +82,16 @@ export class Camera extends Primitive {
 	 * @param renderAfter true if Camera should be immediately rendered to its view after pushing data to buffer
 	 */
 	_pushToBuffers() {
-		if (this._enabled) {
+		if (this.enabled) {
 			this._bufs.forEach((f) => {
 				f._clearBuffers();
-				var p = this._getWorldTransform(true);
-				f._setViewMatrix(this._getViewMat(), p.pos, p.scl)
+				var p = this.getWorldTransform(true);
+				f._setViewMatrix(this.getViewMat(), p.pos, p.scl)
 				f._setProjMatrix(this._currentProjMat);
-				//adding objects
+				//add objects for camera to render
 
 				_objects.forEach((o) => {
-					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o._isEngine) || !o._isEngine)) {
+					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o.isEngine) || !o._isEngine)) {
 						if (o.visible) {
 							o._setGraphicsData(f, this);
 							if(this._render) f._renderData();
@@ -107,7 +107,7 @@ export class Camera extends Primitive {
 							f._renderData();
 						f._points.push(this.debugPoints[i + x])
 						var tmp = new Material.SolidColorNoLighting(this.debugColors[i % this.debugColors.length]);
-						f._loadMaterial(tmp, false, this._wireframe || this._noLighting, this._noParallax)
+						f._loadMaterial(tmp, false, this.wireframe || this.noLighting, this.noParallax)
 						f._normals.push(vec3(1, 0, 0))//debug data has no normals, this is just filler
 						f._tangents.push(vec3(0, 1, 0))
 						//f._bitangents.push(vec3(0, 0, 1))
@@ -116,7 +116,7 @@ export class Camera extends Primitive {
 					x += this.debugOffsets[o]
 				}
 				//render any remaining data
-				if (this._render)
+				if (this.render)
 					f._renderData()
 				})
 			
@@ -128,7 +128,8 @@ export class Camera extends Primitive {
 		//var rotMat = mult(mult(rotateZ(this._transform.rot[2]), rotateY(-(this._transform.rot[1] - 90))), rotateX(-this._transform.rot[0]))//this may look wrong, and it most definately is, but it works
 	}
 
-	_updateCameraView(fov = this._fov, aspect = this._aspect, orthographic = this._ortho, range = this._range, width=null, height=null) {
+	//Modifies the camera view via a variety of parameters
+	updateCameraView(fov = this._fov, aspect = this._aspect, orthographic = this._ortho, range = this._range, width=null, height=null) {
 		var w = width
 		var h = height
 		var a = aspect
@@ -180,7 +181,11 @@ export class Camera extends Primitive {
 		else this._bufs = [targetBuffers]
 		this._enabled = enabled
 		this._renderEngine = renderEngine
-		this._updateCameraView(fov, aspect, orthographic, range)
+		this.updateCameraView(fov, aspect, orthographic, range)
 		_cameras.push(this);
 	}
+}
+
+export function getCameras(){
+	return _cameras;
 }

@@ -31,10 +31,10 @@ var directLight;
 function switchCamera() {
 	if (Q.mainCamera.enabled) {
 		Q.mainCamera.enabled = false
-		altCamera._enabled = true
+		altCamera.enabled = true
 	} else {
 		Q.mainCamera.enabled = true
-		altCamera._enabled = false
+		altCamera.enabled = false
 	}
 }
 
@@ -90,7 +90,7 @@ function userMouseEvent(e) {
 					if (pos[0] > -1 && pos[0] < 1 && pos[1] > -1 && pos[1] < 1) {
 						//var M = mult(Q.mainCamera.getProjMat(), Q.mainCamera.getViewMat())
 						Q.mainCamera.clearDebug()
-						//var mousePos = _getScreenPosInWorldSpace(Q.mainCamera, pos)
+						//var mousePos = getScreenPosInWorldSpace(Q.mainCamera, pos)
 						//var intersect = linearIntersect(getPlane(vec3(0, 1, 0), vec3(1, 1, 0), vec3(1, 1, 1), fastNorm), [mousePos, Q.mainCamera.getWorldTransform().pos])
 					}
 					rClick = 1;
@@ -180,7 +180,7 @@ var rClick = 0
 
 
 function init() {
-	altCamera = new Camera(_bData, vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
+	altCamera = new Camera(Q.getDefaultBuffer(), vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
 	altCamera.enabled = false
 	Q.mainCamera.transform.pos = vec3(0, 1, 0)
 	new AmbientLight(vec4(1, 0, 0, 1), null)
@@ -207,17 +207,17 @@ function init() {
 	var t = new Object({pos: vec3(0, 1, 10), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)}, [{pointIndex: cube.index, matIndex: [0], texCoords: cube.texCoords,
 	type: Q.gl().TRIANGLES, normals: cube.normals, tangents: cube.tangents, textureIndex: -1}, {pointIndex: sphereArr, matIndex: [0], texCoords: sphere.texCoords,
 	type: Q.gl().TRIANGLES, normals: sphere.normals, tangents: sphere.tangents, textureIndex: -1}, {pointIndex: cylinderArr, matIndex: [0], texCoords: cylinder.texCoords,
-	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], _Bounds._RECT, [])
+	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], Bounds.RECT, [])
 
 	var s = getRect(vec3(0, 0, 0), vec3(.5,.5,.5))
 	var x = new Object({pos: vec3(0, 1, 0), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)},[{pointIndex: s.index, matIndex: [0], texCoords: s.texCoords, 
-	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new _BasicMaterial()], _Bounds._RECT, [])
-	x._attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
+	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new BasicMaterial()], Bounds.RECT, [])
+	x.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 	t._customTickFunc = function(d, t) {this.transform.rot = addRotation(this.transform.rot, eulerToQuat(vec3(1,0,0), d*.01))}.bind(t)
 	var testLight = new PointLight({pos: vec3(0,-1,0),rot:eulerToQuat(vec3(1,0,0),0),scl: vec3(1,1,1)}, vec4(1,1,1,1),null,10)
 	testLight.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 }
 
 window.onload = function () {
-	Engine._engineInit("gl-canvas", init, userTick, userKeyEvent, userMouseEvent)
+	Q.engineInit("gl-canvas", init, userTick, userKeyEvent, userMouseEvent)
 }

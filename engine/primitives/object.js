@@ -18,6 +18,8 @@ export class Object extends Primitive {
 	//Points which create this object
 	pointInfo = []
 
+	//If true, this object is engine only, meaning it cannot interact with non-engine objects,
+	//and can only be rendered if a camera is set to render engine only objects
 	isEngine = false
 
 	//Contains Materials required to render this object
@@ -145,4 +147,8 @@ export class Object extends Primitive {
 			this.transform.scl != this._prevTransform.scl)
 			
 	}*/
+}
+
+export function getObjects() {
+	return _objects
 }

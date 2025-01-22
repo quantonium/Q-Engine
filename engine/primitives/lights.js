@@ -121,3 +121,7 @@ export class SpotLight extends PointLight{
         this.type = 4
     }
 }
+
+export function getLights() {
+    return _lights;
+}
