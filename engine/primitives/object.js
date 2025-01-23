@@ -110,7 +110,7 @@ export class Object extends Primitive {
 					buf._loadMaterial(this.matInfo[d.matIndex[ii % d.matIndex.length]], d.textureIndex != -1 && !camera.noTexture, camera.wireframe || camera.noLighting, camera.noParallax)
 					buf._points.push(this.pointInfo[i[ii]])
 					switch (d.type) {
-						case _gl.TRIANGLES:
+						case buf._gTarget.TRIANGLES:
 							buf._normals.push(d.normals[Math.floor(ii / 3)]) //push 3 for each vert
 							buf._tangents.push(d.tangents[Math.floor(ii / 3)]) //push 3 for each vert
 							break;
