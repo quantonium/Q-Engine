@@ -35,15 +35,15 @@ export class Primitive {
 	//Function(delta, time) that runs after customTickFunc
 	customPostTick = function (delta, time) { }
 
-	_cameraMask = 0x1;
-	_bufferMask = 0x1;
-	_lightMask = 0x1;
+	cameraMask = 0x1;
+	bufferMask = 0x1;
+	lightMask = 0x1;
 
 	constructor(transform, bufferMask = 0x1, cameraMask = 0x1, lightMask = 0x1) {
 		this.transform = transform
-		this._bufferMask = bufferMask
-		this._cameraMask = cameraMask
-		this._lightMask = lightMask
+		this.bufferMask = bufferMask
+		this.cameraMask = cameraMask
+		this.lightMask = lightMask
 
 	}
 
