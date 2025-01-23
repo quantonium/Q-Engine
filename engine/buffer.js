@@ -135,7 +135,7 @@ export class ScreenBuffer {
 	_matParamCount = 0;
 	_texCount = 0;
 	_postTexCount = 0;
-	_bufferMask = 0x1;
+	bufferMask = 0x1;
 	_setup = false;
 	_clearColor;
 
@@ -193,7 +193,7 @@ export class ScreenBuffer {
 		
 		
 		this.currentProgram = program;
-		this._bufferMask = bufferMask;
+		this.bufferMask = bufferMask;
 		this._clearColor = clearColor;
 		this.postProcessProgram = postProcessProgram;
 
@@ -423,7 +423,7 @@ export class ScreenBuffer {
 		if (this._lightIndLoc.isValid) {
 			this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
 			getLights().forEach((l) => {
-				if (l != null && x < this.getWGLProgram().maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this._bufferMask) != 0)) {
+				if (l != null && x < this.getWGLProgram().maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this.bufferMask) != 0)) {
 					x++;
 					this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
 					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([l._type]))
@@ -448,7 +448,7 @@ export class ScreenBuffer {
 					this._gTarget.uniform1iv(this._lightNegativeArrayLoc[x], new Int32Array([l._handleNegative]))
 				} else if (x >= this.getWGLProgram().maxLightCount - 1 && l != null && l._enabled) {
 					_bufferedConsoleLog("WARNING: More than " + this.getWGLProgram().maxLightCount + " used, light with ID " + l._id + " will not be visible.")
-				} else if (l._lightMask & this._bufferMask == 0) {
+				} else if (l._lightMask & this.bufferMask == 0) {
 					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
 				}
 			})
@@ -485,7 +485,7 @@ export class ScreenBuffer {
 	}
 
 	_loadTexture(t, cameraMask) {
-		if (this._textureLoc.length > 0) t._applyTexture(this._textureLoc, this._bufferMask, cameraMask)
+		if (this._textureLoc.length > 0) t._applyTexture(this._textureLoc, this.bufferMask, cameraMask)
 	}
 
 	_beginRender() {
