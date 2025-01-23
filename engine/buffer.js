@@ -458,30 +458,30 @@ export class ScreenBuffer {
 	}
 
 	_loadMaterial(m, hasTexture = false, noLighting = false, noParallax = false) {
-		if(m._index < 0) this._matIndicies.push(m._index)
+		if(m.index < 0) this._matIndicies.push(m.index)
 
 		else if (!noLighting) {
 			if (!hasTexture) {
-				if (m._index == 2 || m._index == 3) this._matIndicies.push(1)
-				else if (m._index == 4 || m._index == 5) this._matIndicies.push(0)
-				else this._matIndicies.push(m._index)
+				if (m.index == 2 || m.index == 3) this._matIndicies.push(1)
+				else if (m.index == 4 || m.index == 5) this._matIndicies.push(0)
+				else this._matIndicies.push(m.index)
 			}
 			else if (noParallax) {
-				if (m._index == 2) this._matIndicies.push(3)
-				else if (m._index == 4) this._matIndicies.push(5)
-				else this._matIndicies.push(m._index)
+				if (m.index == 2) this._matIndicies.push(3)
+				else if (m.index == 4) this._matIndicies.push(5)
+				else this._matIndicies.push(m.index)
 			}
 
-			else this._matIndicies.push(m._index)
+			else this._matIndicies.push(m.index)
 		}
 		else {
 			if (hasTexture)
-				if (m._index == 2 && !noParallax) this._matIndicies.push(4)
+				if (m.index == 2 && !noParallax) this._matIndicies.push(4)
 				else this._matIndicies.push(5)
 			else this._matIndicies.push(0)
 		}
 		for (var i = 0; i < this._matParamCount; i++)
-			this._matParams[i].push(m._parameters[i % m._parameters.length])
+			this._matParams[i].push(m.parameters[i % m.parameters.length])
 	}
 
 	_loadTexture(t, cameraMask) {

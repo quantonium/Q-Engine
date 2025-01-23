@@ -19,7 +19,7 @@ export class AmbientLight extends Primitive{
 	color;
 
 	//lightmask to filter out certain materials
-	lightmask;
+	lightmask = 0x1;
 
 	_id;
 
@@ -47,7 +47,7 @@ export class AmbientLight extends Primitive{
 		for(i = 0; AmbientLight._lights[i] != null; i++){}
 		AmbientLight._lights[i] = this
 		this._id = i
-		this._enabled = e
+		this.enabled = e
 		
 		
 	}
@@ -82,9 +82,9 @@ export class DirectionalLight extends AmbientLight{
 	 */
 	constructor(t, c, m, n=LightNegativeHandlers.CLAMP, e = true){
 		super(c, m, n, e)
-		this._transform = t
-		this._color = c
-		this._lightmask = m
+		this.transform = t
+		this.color = c
+		this.lightmask = m
 		this._type = 2
 	}
 
@@ -92,11 +92,11 @@ export class DirectionalLight extends AmbientLight{
 }
 
 export class PointLight extends AmbientLight{
-	_attenuation;
-	_diffuseMultiply = vec4(1,1,1,1)
-	_specularMultiply = vec4(1,1,1,1)
-	_shininess = 1
-	_handleNegativeAlt;
+	attenuation;
+	diffuseMultiply = vec4(1,1,1,1)
+	specularMultiply = vec4(1,1,1,1)
+	shininess = 1
+	handleNegativeAlt;
 	/**
 	 * 
 	 * @param {*} t transform of light (scale not accounted)
@@ -106,11 +106,11 @@ export class PointLight extends AmbientLight{
 	 */
 	constructor(t, c, m, a, s = 1, n=LightNegativeHandlers.CLAMP, na=LightNegativeHandlers.CLAMP, e = true){
 		super(c, m, n, e)
-		this._transform = t
-		this._attenuation = a
+		this.transform = t
+		this.attenuation = a
 		this._type = 3
-		this._shininess = s
-		this._handleNegativeAlt = na
+		this.shininess = s
+		this.handleNegativeAlt = na
 	}
 }
 
@@ -127,7 +127,7 @@ export class SpotLight extends PointLight{
 	constructor(t, c, m, a, s = 1, h = 90, n=LightNegativeHandlers.CLAMP, na=LightNegativeHandlers.CLAMP, e = true){
 		super(t, c, m, a, s, n, na, e)
 		this.angle = h
-		this.type = 4
+		this._type = 4
 	}
 }
 
