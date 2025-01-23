@@ -6,7 +6,7 @@ import {eulerToQuat, right, addRotation, fastNorm} from "../engine/common/helper
 import { getMousePos } from "../engine/userInput.js";
 import { AmbientLight, PointLight, DirectionalLight } from "../engine/primitives/lights.js";
 import {Camera} from "../engine/primitives/camera.js"
-import { BasicMaterial } from "../engine/material.js";
+import { BasicMaterial, Material } from "../engine/material.js";
 import { Object } from "../engine/primitives/object.js";
 import { getRect, getCylinder, getSphere, addToPointIndArr, mergePointArrs } from "../engine/geometry.js";
 import { BoundsType } from "../engine/bounds.js";
