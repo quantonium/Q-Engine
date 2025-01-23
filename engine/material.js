@@ -21,6 +21,9 @@ export class Material {
 
     //WIP light mask which would allow materials to block or allow certain lights with a matching lightmask
     lightMask
+
+    //Custom defined ShaderProgram to load when using this material. If null, works with the buffer's default program.
+    shaderProgram = null
     constructor(index = 1, parameters = [vec4(.5, .5, .5, 1), vec4(.5, .5, .5, 1), vec4(.5, .5, .5, 1), vec4(.5, .5, .5, 1), vec4(0,0,0,1), vec4(1, 8, 32, .1), vec4(1, 1, 0, 0)], lightMask = 0x1) {
         this.index = index
         this.parameters = parameters

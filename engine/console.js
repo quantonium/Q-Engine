@@ -10,7 +10,7 @@ let _consoleBufferLock = false
 let _removedMessages = 0
 let _maxConsoleBuffer = 1000
 
-function bufferedConsoleLog(s) {
+export function bufferedConsoleLog(s) {
 	if (_consoleBufferLock)
 		setTimeout(bufferedConsoleLog, 10, s)
 	else

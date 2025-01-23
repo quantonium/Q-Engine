@@ -182,16 +182,23 @@ var rClick = 0
 
 
 function init() {
+	//altCamera switches to a spectator controlled camera
 	altCamera = new Camera(Q.getDefaultBuffer(), vec3(0, 20, 0), eulerToQuat(vec3(1, 0, 0), 90), vec3(1, 1, 1))
 	altCamera.enabled = false
+
+	//mainCamera is a first person type camera
 	mainCamera = Q.mainCamera
 	mainCamera.transform.pos = vec3(0, 1, 0)
 	new AmbientLight(vec4(1, 0, 0, 1), null)
 	directLight = new DirectionalLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(.5, .5, .5), 90), scl: vec3(1, 1, 1) }, vec4(0, 0, 1, 1), null)
+	
+	//playerLight follows the player (mainCamera)
 	var playerLight = new PointLight({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(1, 0, 0), 0), scl: vec3(1, 1, 1) }, vec4(0, 1, 0, 1), null, 10)
 	mainCamera.attachChildToSelf(playerLight, "relative")
 	altCamera.renderEngine = false
 	var tmp = getRect(vec3(0, 0, 0), vec3(100, 0, 100))
+	
+	//plane defining the ground of the world
 	new Object({ pos: vec3(0, 0, 0), rot: eulerToQuat(vec3(0, 0, 1), 0), scl: vec3(1, 1, 1) }, [
 		{ pointIndex: tmp.index, matIndex: 
 			[1, 1, 1, 1, 1, 1,//bottom
@@ -201,22 +208,29 @@ function init() {
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1], texCoords: tmp.texCoords, type: Q.gl().TRIANGLES, normals: tmp.normals, tangents: tmp.tangents, textureIndex: -1}]
 		, tmp.points, [new Material(), new Material(-1)], BoundsType.RECT)
+
+	//create some shapes that rotate
 	var cube = getRect(vec3(-10,0,0),vec3(1,1,1))
 	var sphere = getSphere(vec3(0,0,0),vec3(1,1,1),10,10)
 	var sphereArr = addToPointIndArr(sphere.index, cube.points.length)
 	var cylinder = getCylinder(vec3(10,0,0),vec3(1,1,1),10)
 	var cylinderArr = addToPointIndArr(cylinder.index, cube.points.length+sphere.points.length)
 	var points = mergePointArrs(mergePointArrs(cube.points, sphere.points), cylinder.points)
+	
+	//this shape consists of multiple components, defined by the points arrays above
 	var t = new Object({pos: vec3(0, 1, 10), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)}, [{pointIndex: cube.index, matIndex: [0], texCoords: cube.texCoords,
 	type: Q.gl().TRIANGLES, normals: cube.normals, tangents: cube.tangents, textureIndex: -1}, {pointIndex: sphereArr, matIndex: [0], texCoords: sphere.texCoords,
 	type: Q.gl().TRIANGLES, normals: sphere.normals, tangents: sphere.tangents, textureIndex: -1}, {pointIndex: cylinderArr, matIndex: [0], texCoords: cylinder.texCoords,
 	type: Q.gl().TRIANGLES, normals: cylinder.normals, tangents: cylinder.tangents, textureIndex: -1}], points, [new BasicMaterial()], BoundsType.RECT, [])
 
+	//this object is attached to to object t, set to not change position, but being attached it will rotate with t
 	var s = getRect(vec3(0, 0, 0), vec3(.5,.5,.5))
 	var x = new Object({pos: vec3(0, 1, 0), rot: eulerToQuat(vec3(0,0,1),0),scl: vec3(1,1,1)},[{pointIndex: s.index, matIndex: [0], texCoords: s.texCoords, 
 	type: Q.gl().TRIANGLES, normals: s.normals, tangents: s.tangents, textureIndex: -1}], s.points, [new BasicMaterial()], BoundsType.RECT, [])
 	x.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 	t._customTickFunc = function(d, t) {this.transform.rot = addRotation(this.transform.rot, eulerToQuat(vec3(1,0,0), d*.01))}.bind(t)
+
+	//test light tests out the lighting model a bit
 	var testLight = new PointLight({pos: vec3(0,-1,0),rot:eulerToQuat(vec3(1,0,0),0),scl: vec3(1,1,1)}, vec4(1,1,1,1),null,10)
 	testLight.attachSelfToParent(t, {pos: "noChange", rot: "noChange", scl: "noChange"})
 }
