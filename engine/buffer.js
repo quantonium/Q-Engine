@@ -1,6 +1,6 @@
 "use strict"
 
-import { vec4, vec2, flatten } from "./common/MVnew.js";
+import { vec4, vec2, flatten, inverse } from "./common/MVnew.js";
 import { getLights } from "./primitives/lights.js";
 
 /**
