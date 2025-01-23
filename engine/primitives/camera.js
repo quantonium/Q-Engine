@@ -18,6 +18,9 @@ export class Camera extends Primitive {
 	debugTypes = []
 	debugOffsets = []
 
+	//if true, visualize normal tangents on points
+	showNormalTangents = false
+
 	//If true, camera renders in wireframe instead of shaded
 	wireframe = false
 
@@ -40,6 +43,9 @@ export class Camera extends Primitive {
 	ortho = false
 	range = [.1, 200000]
 	currentProjMat = null
+
+	//mask to filter out objects from the camera
+	cameraMask = 0x1
 
 	clearDebug() {
 		this.debugPoints = []
@@ -92,7 +98,7 @@ export class Camera extends Primitive {
 				//add objects for camera to render
 
 				getObjects().forEach((o) => {
-					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o.isEngine) || !o._isEngine)) {
+					if (((o.bufferMask & o.cameraMask & f.bufferMask & this.cameraMask) != 0) && ((this.renderEngine && o.isEngine) || !o.isEngine)) {
 						if (o.visible) {
 							o._setGraphicsData(f, this);
 							if(this._render) f._renderData();

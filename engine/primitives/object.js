@@ -87,28 +87,28 @@ export class Object extends Primitive {
 		var b = this.bounds.getGraphicsDrawBounds()
 
 		buf._setModelMatrix(newMat)
-		for (var g = 0; g < this._drawInfo.length; g++) {
-			var d = this._drawInfo[g]
+		for (var g = 0; g < this.drawInfo.length; g++) {
+			var d = this.drawInfo[g]
 			var i = d.pointIndex
 
 			if (i.length > buf._bufLimit)
 				console.error("Unable to load data to GPU. Too many points. Length: " + i.length + "; Object: " + o);
 			else {
 
-				if (((i.length + buf._points.length > buf._bufLimit) || d.textureIndex != -1) && camera._render)
+				if (((i.length + buf._points.length > buf._bufLimit) || d.textureIndex != -1) && camera.render)
 					buf._renderData();
 
 				buf._offsets.push(i.length)
 				
-				buf._types.push(camera._wireframe ? buf._gTarget.LINE_LOOP : d.type)
+				buf._types.push(camera.wireframe ? buf._gTarget.LINE_LOOP : d.type)
 
 				if (d.textureIndex != -1)
-					buf._loadTexture(this._textureInfo[d.textureIndex], camera._cameraMask)
+					buf._loadTexture(this.textureInfo[d.textureIndex], camera.cameraMask)
 
 				buf._texCoords = d.texCoords
 				for (var ii = 0; ii < i.length; ii++) {
-					buf._loadMaterial(this._matInfo[d.matIndex[ii % d.matIndex.length]], d.textureIndex != -1 && !camera._noTexture, camera._wireframe || camera._noLighting, camera._noParallax)
-					buf._points.push(this._pointInfo[i[ii]])
+					buf._loadMaterial(this.matInfo[d.matIndex[ii % d.matIndex.length]], d.textureIndex != -1 && !camera.noTexture, camera.wireframe || camera.noLighting, camera.noParallax)
+					buf._points.push(this.pointInfo[i[ii]])
 					switch (d.type) {
 						case _gl.TRIANGLES:
 							buf._normals.push(d.normals[Math.floor(ii / 3)]) //push 3 for each vert
@@ -122,12 +122,12 @@ export class Object extends Primitive {
 					//buf._texCoords.push(d.texCoords[ii])
 				}
 
-				if ((d.textureIndex != -1 || camera._showNormalTangents) && camera._render)
+				if ((d.textureIndex != -1 || camera.showNormalTangents) && camera.render)
 					buf._renderData();
 			}
 		}
 		if (camera.showBounds && !this.isEngine) {
-			if (camera._render)
+			if (camera.render)
 				buf._renderData();
 			buf._types.push(buf._gTarget.LINE_LOOP);
 			var b = this.bounds.getGraphicsDrawBounds();
@@ -135,7 +135,7 @@ export class Object extends Primitive {
 			for (var i = 0; i < b.points.length; i++) {
 				buf._points.push(b.points[i])
 				var tmp = new SolidColorNoLighting(b.colors[i % b.colors.length]);
-				buf._loadMaterial(tmp, false, camera._wireframe || camera._noLighting)
+				buf._loadMaterial(tmp, false, camera.wireframe || camera.noLighting)
 				buf._normals.push(vec3(1, 0, 0))//Bounds have no normals, this is just filler
 				buf._tangents.push(vec3(0, 1, 0))
 				buf._texCoords.push(vec2(0, 0)) //Bounds have no textures, again just filler
