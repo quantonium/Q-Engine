@@ -4,18 +4,36 @@ import { vec4, vec2, flatten, inverse } from "./common/MVnew.js";
 import { getLights } from "./primitives/lights.js";
 import { bufferedConsoleLog } from "./console.js";
 
+export const RENDERER_BUFFER_TYPES = {
+	VIEW: "viewMatrix",
+	PROJ: "projMatrix",
+	NORM: "normalMatrix",
+	MVP: "MVPMatrix",
+	MODL: "modelMatrix",
+	CAMW: "inCameraPosW",
+	CAMS: "inCameraScale",
+	MLIG: "maxLightIndex",
+	MISC: "MiscVarSetManually"
+}
+
 /**
  * An attribute location for a given buffer, mapping name to wgl location
  */
-class BufferSet {
+export class BufferSet {
 	buffer; //WebGL buffer
 	inputAttribute; //attrib location
 	locationName; //string
+	size = 3; //size of the datatype, ie 3 for vec3
+	type = null; //the webgl data type, ie gl.FLOAT
 
-	constructor(locationName, gTarget = null, shaderProgram = null, defaultViewportSize = vec2(1280,720)){
+	_gl
+
+	constructor(locationName, gTarget, shaderProgram, type, size = 3) {
 		this.locationName = locationName;
-		this.viewportSize = defaultViewportSize
-		if(gTarget != null && shaderProgram != null)
+		this.type = type
+		this.size = size
+		this._gl = gTarget
+		if (gTarget != null && shaderProgram != null)
 			this.setupBuffer(gTarget, shaderProgram, true)
 	}
 
@@ -23,24 +41,26 @@ class BufferSet {
 	 * Set up a new buffer for an attribute, if possible. Creates
 	 * TODO: @params
 	 */
-	 setupBuffer(gTarget, shaderProgram, createNewBuffer = false){
-		if(this.locationName != null){
-			if(createNewBuffer) this.buffer = gTarget.createBuffer();
-			this.inputAttribute = gTarget.getAttribLocation(shaderProgram.program, this.locationName);
-			if(this.inputAttribute == -1) alert(this.locationName + ": unknown/invalid shader location");
+	setupBuffer(shaderProgram, createNewBuffer = false) {
+		if (this.locationName != null) {
+			if (createNewBuffer) this.buffer = this._gl.createBuffer();
+			this.inputAttribute = this._gl.getAttribLocation(shaderProgram.program, this.locationName);
+			if (this.inputAttribute == -1) alert(this.locationName + ": unknown/invalid shader location");
 		}
 	}
 
-	isValid(){
+	isValid() {
 		return this.locationName != null && this.inputAttribute != -1;
 	}
 
-	loadBufferData(gTarget, bufferType, drawType, data, size, type, normalized=false, stride=0, offset=0){
+	loadBufferData(bufferType, drawType, data, normalized = false, stride = 0, offset = 0, useIPointer = false) {
 		if (this.isValid()) {
-			gTarget.bindBuffer(bufferType, this.buffer);
-			gTarget.bufferData(bufferType, data, drawType);
-			gTarget.vertexAttribPointer(this.inputAttribute, size, type, normalized, stride, offset);
-			gTarget.enableVertexAttribArray(this.inputAttribute);
+			this._gl.bindBuffer(bufferType, this.buffer);
+			this._gl.bufferData(bufferType, data, drawType);
+			if (!useIPointer)
+				this._gl.vertexAttribPointer(this.inputAttribute, this.size, this.type, normalized, stride, offset);
+			else this._gl.vertexAttribIPointer(this.inputAttribute, this.size, this.type, stride, offset)
+			this._gl.enableVertexAttribArray(this.inputAttribute);
 		}
 	}
 }
@@ -48,23 +68,82 @@ class BufferSet {
 /**
  * A shader uniform location for a given buffer, mapping name to wgl location
  */
-class UniformLocation {
+export class UniformLocation {
 	location;
 	name;
-	constructor(uniformName, gTarget, shaderProgram){
-		this.setLocation(gTarget, shaderProgram, uniformName)
+	type; //match webgl uniform types as strings, ie 1fv, Matrix2fv, etc. Must match exact or it will error!
+	//see: https://www.khronos.org/files/webgl20-reference-guide.pdf uniforms
+
+	_gl
+	constructor(uniformName, gTarget, shaderProgram, type) {
+		this.name = uniformName
+		this.type = type
+		this._gl = gTarget
+		this.location = this.getLocation(shaderProgram, uniformName)
 	}
 
-	setLocation(gTarget, shaderProgram, uniformName = null){
-		if(uniformName != null) this.name = uniformName;
-		if (this.name != null) {
-			this.location = gTarget.getUniformLocation(shaderProgram.program, this.name);
-			if (this.location == -1) alert(this.name + ": unknown/invalid shader location");
+	getLocation(shaderProgram, uniformName) {
+		let val = gTarget.getUniformLocation(shaderProgram.program, uniformName);
+		if (val == -1){
+			console.log(this.name + ": unknown/invalid shader location");
+			return -1
+		}
+		return val
+	}
+
+	loadUniform(data, matrixTranspose = false) {
+		UniformLocation.loadUniform(this._gl, this.location, this.type, data, matrixTranspose)
+	}
+
+	static loadUniform(gTarget, location, type, data, matrixTranspose = false) {
+		
+		if(type.indexOf("Matrix") >= 0){
+			fn = Function("gTarget", "location", "matrixTranspose", "data",
+				"gTarget.uniform"+type+"(location, matrixTranspose, data)")
+			fn(gTarget, location, matrixTranspose, data)
+		}
+		else {
+			fn = Function("gTarget", "location", "data",
+				"gTarget.uniform"+type+"(location, data)")
+			fn(gTarget, location, matrixTranspose, data)
 		}
 	}
 
-	isValid(){
+	isValid() {
 		return this.name != null && this.location != -1
+	}
+}
+
+/**
+ * Like UniformLocation but modified to work with a struct in wgl.
+ * Critical difference is the loadUniform function expects data and matrixTranspose
+ * to be Maps mapping the field to the data for that field.
+ */
+export class StructUniformLocation extends UniformLocation {
+	structFields = new Map() //map the struct field name to the index
+	structTypes = new Map() //map field name to type
+
+	//type is the struct type
+	constructor(uniformName, gTarget, shaderProgram, type, structFields, structTypes) {
+		this.name = uniformName
+		this.type = type
+		this._gl = gTarget
+		for(i = 0; i < structFields.length(); i++){
+			let fieldName = uniformName + "." + structFields[i]
+			this.structFields.set(structFields[i], this.loadUniform(shaderProgram, fieldName))
+			this.structTypes.set(structFields[i], structTypes[i])
+		}
+	}
+
+	//data expected to be a map-like structure mapping field name to the data. Similar for matrixTranspose.
+	loadUniform(data, matrixTranspose) {
+		this.structFields.keys().forEach(element => {
+			this.loadUniformField(element, data.get(element), matrixTranspose.get(element))
+		});
+	}
+
+	loadUniformField(fieldName, data, matrixTranspose = false){
+		UniformLocation.loadUniform(this._gl, this.structFields.get(fieldName), this.structTypes.get(fieldName), data, matrixTranspose)
 	}
 }
 
@@ -78,6 +157,11 @@ export class Renderer {
 	static getRenderers() {
 		return Renderer._renderers
 	}
+
+	//bufferMap maps {program, string} to BufferSet
+	_bufferMap = Map()
+	_uniformMap = Map()
+	_structUniformMap = Map()
 
 	_matParams = []
 	_matIndicies = []
@@ -116,10 +200,10 @@ export class Renderer {
 	_lightNegativeArrayLoc = [];
 	_lightAltNegativeArrayLoc = []
 	_lightIndLoc;
-	_cameraPosLoc;
-	_textureLoc = []
-	_cameraSclLoc;
 	
+	_textureLoc = []
+	
+
 	//Current 3D ShaderProgram that this buffer will use to render.
 	//Set to null to disable
 	currentProgram = null;
@@ -138,9 +222,9 @@ export class Renderer {
 
 	//buffer renders only objects that match this mask
 	bufferMask = 0x1;
-	
+
 	_setup = false;
-	
+
 	//color which to clear to after rendering a frame
 	clearColor;
 
@@ -159,14 +243,7 @@ export class Renderer {
 	_FLOATING_BUF_EXT;
 
 	//Modify this value as needed to alter the size of the buffer viewport.
-	viewportSize = new vec2(1280,720)
-
-	_setupInfo = {
-		coordStr: null, matStr: null, matParamCount: null, matIndStr: null, texStr: null, texCount: null, postTexStr: null, postTexCount: null, projMatrixStr: null,
-		viewMatrixStr: null, normalMatrixStr: null, modelMatrixStr: null, lightsArrayStr: null, lightsIndexStr: null,
-		normalStr: null, tanStr: null, biTanStr: null, texCoordStr: null, cameraPosStr: null, cameraScaleStr: null,
-		customSetupFunction: null
-	}
+	viewportSize = new vec2(1280, 720)
 
 	_customClearFunction = (gTarget, program) => { }
 	_customBeginRenderFunction = (gTarget, program) => { }
@@ -183,13 +260,13 @@ export class Renderer {
 		Renderer._renderers.push(this);
 	}
 
-	switchCurrentShaderPrograms(newProgram){
+	switchCurrentShaderPrograms(newProgram) {
 		this._gTarget.useProgram(newProgram.program)
 		this._activeProgram = newProgram;
 		return this._activeProgram.program;
 	}
 
-	getWGLProgram(){
+	getWGLProgram() {
 		return this._activeProgram.program;
 	}
 
@@ -198,7 +275,9 @@ export class Renderer {
 	}
 
 	//Sets up the buffer to work with the given shader program(s)
-	_initProgram(shaderProgram = null) {
+	//@param shaderProgram the shader program to initialize
+	//@param buffers a list of strings of attribute values in the given program to create buffers for
+	_initProgram(shaderProgram, buffers = [], attributes = [], uniforms = []) {
 		this._inSetup = true
 		this._setupInfo.customSetupFunction(this._gTarget, this.getWGLProgram());
 		this._setup = true
@@ -217,21 +296,6 @@ export class Renderer {
 		this._normals = []
 		//this._bitangents = []
 		this._tangents = []
-	}
-
-	_setViewMatrix(v, p, s) {
-		if (this._viewMatrix.location != null) this._gTarget.uniformMatrix4fv(this._viewMatrix.location, false, flatten(v));
-		if (this._cameraPosLoc.location != null) this._gTarget.uniform3fv(this._cameraPosLoc.location, flatten(p))
-		if (this._cameraSclLoc.location != null) this._gTarget.uniform3fv(this._cameraSclLoc.location, flatten(s))
-	}
-
-	_setModelMatrix(m) {
-		if (this._modelMatrix.location != null) this._gTarget.uniformMatrix4fv(this._modelMatrix.location, false, flatten(m))
-		if (this._normalMatrix.location != null) this._gTarget.uniformMatrix4fv(this._normalMatrix.location, true, flatten(inverse(m)))
-	}
-
-	_setProjMatrix(p) {
-		if (this._projMatrix.location != null) this._gTarget.uniformMatrix4fv(this._projMatrix.location, false, flatten(p));
 	}
 
 	_updateLights() {
@@ -274,7 +338,7 @@ export class Renderer {
 	}
 
 	_loadMaterial(m, hasTexture = false, noLighting = false, noParallax = false) {
-		if(m.index < 0) this._matIndicies.push(m.index)
+		if (m.index < 0) this._matIndicies.push(m.index)
 
 		else if (!noLighting) {
 			if (!hasTexture) {
@@ -310,163 +374,12 @@ export class Renderer {
 		//load new buffer data
 		//TODO: modify for custom programs
 		this.switchCurrentShaderPrograms(this.currentProgram)
-		this._gTarget.viewport(0, 0, this.viewportSize.x, this.viewportSize.y);
-		this._gTarget.enable(this._gTarget.DEPTH_TEST);
-		this._gTarget.enable(this._gTarget.CULL_FACE);
-		//this._gTarget.enable(this._gTarget.DEPTH_CLAMP); //not supported in WebGL
-		this._gTarget.colorMask(true, true, true, true);
-		this._gTarget.enable(this._gTarget.BLEND)
-		this._gTarget.blendFunc(this._gTarget.SRC_ALPHA, this._gTarget.ONE_MINUS_SRC_ALPHA);
-		this._gTarget.frontFace(this._gTarget.CW);
-		this._gTarget.depthFunc(this._gTarget.LESS);
-
-		if (!this._inSetup) {
-			if (!this._setup) this.init(this.currentProgram, this.postProcessProgram);
-
-			this._customBeginRenderFunction(this._gTarget, this.currentProgram)
-			this._updateLights();
-
-			for(var i = 0; i < this._texCount; i++){
-				this._gTarget.activeTexture(this._gTarget.TEXTURE0 + i);
-				this._gTarget.bindTexture(this._gTarget.TEXTURE_2D, null);
-			}
-
-			this._gTarget.bindFramebuffer(this._gTarget.FRAMEBUFFER, this._outBuffer);
-			for (var i = 0; i < this._setupInfo.postTexCount; i++) {
-				this._gTarget.framebufferTexture2D(this._gTarget.FRAMEBUFFER, this._gTarget.COLOR_ATTACHMENT0+i, this._gTarget.TEXTURE_2D,
-					this._outImages[i], 0);
-			}
-
-			this._gTarget.drawBuffers(this._drawBuffers);
-			//this._gTarget.useProgram(this._program.program);
-			this._gTarget.clearColor(0, 0, 0, 0)
-			this._gTarget.clear(this._gTarget.COLOR_BUFFER_BIT | this._gTarget.DEPTH_BUFFER_BIT);
-			this._clearBuffers();
-		}
-	}
-
-	_renderData() {
-		if (this._points.length > 0) {
-			this._customPreRenderFunction(this._gTarget, this._program);
-
-			this._posBuffer.loadBufferData(this._gTarget, 
-				this._gTarget.ARRAY_BUFFER, 
-				this._gTarget.STATIC_DRAW, 
-				flatten(this._points), 
-				3, 
-				this._gTarget.FLOAT, 
-				false, 
-				0, 
-				0);
-
-			if (this._matIndBuf != null) {
-				this._gTarget.bindBuffer(this._gTarget.ARRAY_BUFFER, this._matIndBuf);
-				this._gTarget.bufferData(this._gTarget.ARRAY_BUFFER, new Int16Array(this._matIndicies), this._gTarget.STATIC_DRAW);
-				this._gTarget.vertexAttribIPointer(this._inMatIndex, 1, this._gTarget.SHORT, 0, 0);
-				this._gTarget.enableVertexAttribArray(this._inMatIndex);
-			}
-
-			//load materials
-			//TODO: clean this up
-			for (var i = 0; i < this._matParamCount; i++) {
-				this._gTarget.bindBuffer(this._gTarget.ARRAY_BUFFER, this._matParamsBufs[i]);
-				this._gTarget.bufferData(this._gTarget.ARRAY_BUFFER, flatten(this._matParams[i]), this._gTarget.STATIC_DRAW);
-				this._gTarget.vertexAttribPointer(this._inMatParams[i], 4, this._gTarget.FLOAT, false, 0, 0);
-				this._gTarget.enableVertexAttribArray(this._inMatParams[i]);
-			}
-
-			this._normBuf.loadBufferData(this._gTarget, 
-				this._gTarget.ARRAY_BUFFER, 
-				this._gTarget.STATIC_DRAW, 
-				flatten(this._normals), 
-				3, 
-				this._gTarget.FLOAT, 
-				true, 
-				0, 
-				0);
-
-			this._tanBuf.loadBufferData(this._gTarget, 
-				this._gTarget.ARRAY_BUFFER, 
-				this._gTarget.STATIC_DRAW, 
-				flatten(this._tangents), 
-				3, 
-				this._gTarget.FLOAT, 
-				true, 
-				0, 
-				0);
-
-			this._biTanBuf.loadBufferData(this._gTarget, 
-				this._gTarget.ARRAY_BUFFER, 
-				this._gTarget.STATIC_DRAW, 
-				flatten(this._bitangents), 
-				3, 
-				this._gTarget.FLOAT, 
-				true, 
-				0, 
-				0);
-
-			this._txBuf.loadBufferData(this._gTarget, 
-				this._gTarget.ARRAY_BUFFER, 
-				this._gTarget.STATIC_DRAW, 
-				flatten(this._texCoords), 
-				2, 
-				this._gTarget.FLOAT, 
-				false, 
-				0, 
-				0);
-
-			//draw
-			var offset = 0;
-			for (var i = 0; i < this._types.length; i++) {
-				this._customRenderFunction(this._gTarget, this.currentProgram);
-				this._gTarget.drawArrays(this._types[i], offset, this._offsets[i]);
-				offset += this._offsets[i];
-			}
-			this._customPostRenderFunction(this._gTarget, this.currentProgram);
-		}
-		/*var tmp = this._gTarget.getError()
-		if (tmp != this._gTarget.NO_ERROR) {
-			switch (tmp) {
-				case this._gTarget.INVALID_OPERATION:
-				case this._gTarget.INVALID_FRAMEBUFFER_OPERATION:
-				case this._gTarget.OUT_OF_MEMORY:
-					alert("WebGL error " + tmp + "; Make sure hardware acceleration is enabled in your web browser.")
-				default:
-					alert("WebGL error " + tmp)
-			}
-		}*/
 		this._clearBuffers();
 	}
 
-	/**
-	 * Manually apply final step postprocessing to output image by drawing a rectangle on the entire screen containing the scene image processed via the post process shaders
-	 */
-	_applyPostProcessToScene() {
+	//Renders data as needed. By default, only clears buffers- call super after your render code
+	_renderData() {
 
-		//this._gTarget.drawBuffers([this._gTarget.NONE, this._gTarget.NONE]);
-		this.switchCurrentShaderPrograms(this.postProcessProgram)
-		this._gTarget.depthFunc(this._gTarget.LESS)
-		this._gTarget.bindFramebuffer(this._gTarget.FRAMEBUFFER, null);
-
-		for(var i = 0; i < this._postTexCount; i++){
-			this._gTarget.activeTexture(this._gTarget.TEXTURE0+i);
-			this._gTarget.bindTexture(this._gTarget.TEXTURE_2D, this._outImages[i]);
-		}
-
-
-		this._gTarget.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], this.clearColor[3])
-		this._gTarget.clear(this._gTarget.COLOR_BUFFER_BIT | this._gTarget.DEPTH_BUFFER_BIT);
-		if (this._postPosBuf != null) {
-			this._gTarget.bindBuffer(this._gTarget.ARRAY_BUFFER, this._postPosBuf);
-			this._gTarget.bufferData(this._gTarget.ARRAY_BUFFER, new Float32Array([-1, -1,
-			-1, 1,
-				1, 1,
-				1, 1,
-				1, -1,
-			-1, -1]), this._gTarget.STATIC_DRAW);
-			this._gTarget.vertexAttribPointer(this._postPosIn, 2, this._gTarget.FLOAT, false, 0, 0);
-			this._gTarget.enableVertexAttribArray(this._postPosIn);
-		} else throw "Missing required shader input for vertex location"
-		this._gTarget.drawArrays(this._gTarget.TRIANGLES, 0, 6)
+		this._clearBuffers();
 	}
 }

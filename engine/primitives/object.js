@@ -16,7 +16,7 @@ import { Bounds } from "../bounds.js";
 export class Object extends Primitive {
 	static _objects = new Map();
 
-	//Indicates what materials to render ot which face
+	//Indicates what materials to render to which face
 	drawInfo = []
 
 	//Points which create this object

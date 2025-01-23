@@ -3,6 +3,9 @@
 import { Renderer } from "./Renderer.js"
 
 export class PostprocessRenderer extends Renderer {
+
+	_vao = null
+
 	constructor(gTarget, program, postTexStr, postTexCount) {
 		super(gTarget)
 		this.switchCurrentShaderPrograms(program)
@@ -10,6 +13,8 @@ export class PostprocessRenderer extends Renderer {
 			postTexStr: postTexStr,
 			postTexCount: postTexCount
 		}
+
+		_vao = gTarget.createVertexArray()
 	}
 
 	_initProgram(postProcessProgram){
@@ -90,5 +95,34 @@ export class PostprocessRenderer extends Renderer {
 				for(var i = 0; i < this._postTexCount; i++) this._drawBuffers.push(this._gTarget.COLOR_ATTACHMENT0+i)
 			}
 		}
+	}
+
+	_renderData() {
+		//this._gTarget.drawBuffers([this._gTarget.NONE, this._gTarget.NONE]);
+		this.switchCurrentShaderPrograms(this.postProcessProgram)
+		this._gTarget.depthFunc(this._gTarget.LESS)
+		this._gTarget.bindFramebuffer(this._gTarget.FRAMEBUFFER, null);
+
+		for(var i = 0; i < this._postTexCount; i++){
+			this._gTarget.activeTexture(this._gTarget.TEXTURE0+i);
+			this._gTarget.bindTexture(this._gTarget.TEXTURE_2D, this._outImages[i]);
+		}
+
+
+		this._gTarget.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], this.clearColor[3])
+		this._gTarget.clear(this._gTarget.COLOR_BUFFER_BIT | this._gTarget.DEPTH_BUFFER_BIT);
+		if (this._postPosBuf != null) {
+			this._gTarget.bindBuffer(this._gTarget.ARRAY_BUFFER, this._postPosBuf);
+			this._gTarget.bufferData(this._gTarget.ARRAY_BUFFER, new Float32Array([-1, -1,
+			-1, 1,
+				1, 1,
+				1, 1,
+				1, -1,
+			-1, -1]), this._gTarget.STATIC_DRAW);
+			this._gTarget.vertexAttribPointer(this._postPosIn, 2, this._gTarget.FLOAT, false, 0, 0);
+			this._gTarget.enableVertexAttribArray(this._postPosIn);
+		} else throw "Missing required shader input for vertex location"
+		this._gTarget.drawArrays(this._gTarget.TRIANGLES, 0, 6)
+		super._renderData()
 	}
 }
