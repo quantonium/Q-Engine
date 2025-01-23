@@ -222,6 +222,6 @@ function init() {
 }
 
 window.onload = function () {
-	document.querySelector("switchCameraBtn").addEventListener("click", switchCamera)
+	document.getElementById("switchCameraBtn").addEventListener("click", switchCamera)
 	Q.engineInit("gl-canvas", init, userTick, userKeyEvent, userMouseEvent)
 }
