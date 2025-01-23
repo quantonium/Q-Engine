@@ -1,7 +1,7 @@
 "use strict";
 
 import {rotateAbout, eulerToQuat, normalsFromTriangleVerts, tanFromTriangleVerts} from "./common/helpers-and-types.js"
-import {mix, radians, mult, vec3, vec2, normalize, add} from "./common/MVnew.js"
+import {mix, radians, mult, vec3, vec2, normalize, add, subtract} from "./common/MVnew.js"
 
 export function getSphere(pos, radius, numFaces, numLayers, rot=eulerToQuat(vec3(0,1,0), 0), normFunction=normalize){
 	var nl = numLayers+1
