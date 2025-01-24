@@ -5,13 +5,13 @@ precision highp float;
 const int LIGHT_COUNT=16;
 const int MAT_PROP_COUNT=7;
 
-in vec3 inPointsL;
+layout(location=0) in vec3 inPointsL;
 in vec3 inNormalL;
 in vec2 inTexCoord;
 in vec3 inTangentL;
 //in vec3 inBiTangent;
 //attribute vec3 inNormal;
-in int inMatIndex;
+in int inMatFunc;
 in vec4 inMatProp0;//screw GLSL ES not supporting in attribute arrays
 in vec4 inMatProp1;
 in vec4 inMatProp2;
@@ -41,7 +41,7 @@ out vec3 normalT;
 out vec3 normalW;
 
 out mat3 TBN;
-flat out int matIndex;
+flat out int matFunc;
 out vec4 matProp[MAT_PROP_COUNT];
 
 
@@ -80,7 +80,7 @@ void main(void) {
 	matProp[5] = inMatProp5;
 	matProp[6] = inMatProp6;
 
-	matIndex = inMatIndex;
+	matFunc = inMatFunc;
 
 	texCoord = inTexCoord;
 

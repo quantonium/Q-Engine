@@ -17,7 +17,7 @@ export class SceneRenderer extends Renderer {
 		"inNormalL",
 		"inTexCoord",
 		"inTangentL",
-		"inMatIndex",
+		"inMatFunc",
 		"inMatProp0",
 		"inMatProp1",
 		"inMatProp2",
@@ -244,6 +244,45 @@ export class SceneRenderer extends Renderer {
 			//this._gTarget.useProgram(this._program.program);
 			this._gTarget.clearColor(0, 0, 0, 0)
 			this._gTarget.clear(this._gTarget.COLOR_BUFFER_BIT | this._gTarget.DEPTH_BUFFER_BIT);
+		}
+	}
+
+	_updateLights() {
+		var x = -1
+		if (this._lightIndLoc.isValid) {
+			this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
+			getLights().forEach((l) => {
+				if (l != null && x < this.getActiveShaderProgram().maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this.bufferMask) != 0)) {
+					x++;
+					this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
+					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([l._type]))
+					switch (l._type) {
+						case 4:
+							this._gTarget.uniform1fv(this._lightAngleArrayLoc[x], new Float32Array([l._angle]))
+						case 3:
+							this._gTarget.uniform1fv(this._lightAttenArrayLoc[x], new Float32Array([l._attenuation]))
+							this._gTarget.uniform4fv(this._lightDiffArrayLoc[x], flatten(l._diffuseMultiply))
+							this._gTarget.uniform4fv(this._lightSpecArrayLoc[x], flatten(l._specularMultiply))
+							this._gTarget.uniform1fv(this._lightShinyArrayLoc[x], new Float32Array([l._shininess]))
+							this._gTarget.uniform1iv(this._lightAltNegativeArrayLoc[x], new Int32Array([l._handleNegativeAlt]))
+						case 2:
+							var t = l._getWorldTransform(true)
+							this._gTarget.uniform3fv(this._lightDirArrayLoc[x], flatten(forward(t.rot)))
+							this._gTarget.uniform3fv(this._lightLocArrayLoc[x], flatten(t.pos))
+						case 1:
+							this._gTarget.uniform4fv(this._lightColorArrayLoc[x], flatten(l._color));
+							break;
+
+					}
+					this._gTarget.uniform1iv(this._lightNegativeArrayLoc[x], new Int32Array([l._handleNegative]))
+				} else if (x >= this.getActiveShaderProgram().maxLightCount - 1 && l != null && l._enabled) {
+					bufferedConsoleLog("WARNING: More than " + this.getActiveShaderProgram().maxLightCount + " used, light with ID " + l._id + " will not be visible.")
+				} else if (l._lightMask & this.bufferMask == 0) {
+					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
+				}
+			})
+			for (x++; x < this.getActiveShaderProgram().maxLightCount && x < this._lightTypeArrayLoc.length; x++)
+				this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
 		}
 	}
 

@@ -1,10 +1,42 @@
 #version 300 es
 precision highp float;
 
-const int LIGHT_COUNT=16; //ensures unifrom count is less than WebGL min
-const int SHADOWED_LIGHT_COUNT = 16; //1 light for each shadow map. Might want to perform shadows in supplementary stage.
-const int MAT_PROP_COUNT=7;
+const uint LIGHT_COUNT=16; //ensures unifrom count is less than WebGL min
+const uint SHADOWED_LIGHT_COUNT = 16; //1 light for each shadow map. Might want to perform shadows in supplementary stage.
+const uint MAT_PROP_COUNT=7;
 const float ATTENUATION_DROPOFF=.01;
+
+//enums- match in js code!
+const lowp int DEBUG_DEPTH=-3
+const lowp int DEBUG_TEXCOORD=-2
+const lowp int NODRAW=-1
+const lowp int UNLIT_SOLID=0
+const lowp int NOTEX=1
+const lowp int PARALLAX=2
+const lowp int PBR=3
+const lowp int UNLIT_PARALLAX=4
+const lowp int UNLIT_PBR=5
+const lowp int OTHER=255
+
+const lowp uint NOCHANGE=0
+const lowp uint CLAMP=1
+const lowp uint CLAMPNEGATIVE=2
+const lowp uint ABS=3
+
+const lowp uint AMB = 1
+const lowp uint DIR = 2
+const lowp uint SPOT = 4
+const lowp uint POINT = 3
+const lowp uint NONE = 0
+
+const lowp uint COLOR = 0
+const lowp uint DIFFUSE = 1
+const lowp uint SPECULAR = 2
+const lowp uint AMBMULT = 3
+const lowp uint EMISSIVE = 4
+const lowp uint SHINIPARA = 5
+const lowp uint TXCSCLDISP = 6
+
 in vec2 texCoord;
 in mat3 TBN;
 
@@ -15,7 +47,7 @@ in vec3 cameraPosW;
 in vec3 normalT;
 in vec3 normalW;
 
-flat in int matIndex;
+flat in int matFunc;
 in vec4 matProp[MAT_PROP_COUNT];
 //in vec4 positionS;
 
@@ -27,7 +59,7 @@ layout(location=4) out vec4 fColor; //surface color * ambient multiply
 layout(location=5) out vec4 fDiffuse; //surface diffuse multiply
 layout(location=6) out vec4 fSpecular; //surface specular multiply
 layout(location=7) out vec4 fEmissive; //surface emissive color
-//attribute int matIndex; //default = 0, constant values; 1 = texture, constant values; -1 = unlit solid color
+//attribute int matFunc; //default = 0, constant values; 1 = texture, constant values; -1 = unlit solid color
 
 //STRUCT SIZE: 
 //Currently: 10?
@@ -106,32 +138,32 @@ sMat getStandardLight(vec4 mp5, vec3 norm, vec3 pos, vec3 viewPos, bool tangentS
 	
 	for(int x=0;x<=maxLightIndex;x++){
 		switch(lights[x].type){
-			case 1://ambient
+			case AMB://ambient
 			switch(lights[x].negativeHandler){
-				case 1:
+				case CLAMP:
 				r.ambient=vec4(r.ambient.r+max(0.,lights[x].color.r),
 				r.ambient.g+max(0.,lights[x].color.g),
 				r.ambient.b+max(0.,lights[x].color.b),
 				r.ambient.a*lights[x].color.a);
 				break;
-				case 2:
+				case CLAMPNEGATIVE:
 				r.ambient=vec4(r.ambient.r+min(0.,lights[x].color.r),
 				r.ambient.g+min(0.,lights[x].color.g),
 				r.ambient.b+min(0.,lights[x].color.b),
 				r.ambient.a*lights[x].color.a);
 				break;
-				case 3:
+				case ABS:
 				r.ambient=vec4(r.ambient.r+abs(lights[x].color.r),
 				r.ambient.g+abs(lights[x].color.g),
 				r.ambient.b+abs(lights[x].color.b),
 				r.ambient.a*lights[x].color.a);
 				break;
-				case 0:default:
+				case NOCHANGE:default:
 				r.ambient=vec4(r.ambient.rgb+lights[x].color.rgb,r.ambient.a*lights[x].color.a);
 			}
 			break;
 
-			case 2://directional
+			case DIR://directional
 			float NdotL = 0.;
 			vec3 ld = vec3(-1,-1,1)*normalize(lights[x].directionW);
 			if(tangentSpace)
@@ -139,32 +171,32 @@ sMat getStandardLight(vec4 mp5, vec3 norm, vec3 pos, vec3 viewPos, bool tangentS
 			else NdotL=dot((ld),N);
 			vec4 c=NdotL*(lights[x].color);
 			switch(lights[x].negativeHandler){
-				case 1:
+				case CLAMP:
 				r.diffuse=vec4(r.diffuse.r+max(0.,c.r),
 				r.diffuse.g+max(0.,c.g),
 				r.diffuse.b+max(0.,c.b),
 				mix(r.diffuse.a,r.diffuse.a*lights[x].color.a,max(0.,NdotL)));
 				break;
-				case 2:
+				case CLAMPNEGATIVE:
 				r.diffuse=vec4(r.diffuse.r+min(0.,c.r),
 				r.diffuse.g+min(0.,c.g),
 				r.diffuse.b+min(0.,c.b),
 				mix(r.diffuse.a,r.diffuse.a*lights[x].color.a,min(0.,NdotL)));
 				break;
-				case 3:
+				case ABS:
 				r.diffuse=vec4(r.diffuse.r+abs(c.r),
 				r.diffuse.g+abs(c.g),
 				r.diffuse.b+abs(c.b),
 				mix(r.diffuse.a,r.diffuse.a*lights[x].color.a,abs(NdotL)));
 				break;
-				case 0:default:
+				case NOCHANGE:default:
 				r.diffuse=vec4(r.diffuse.rgb+c.rgb,mix(r.diffuse.a,r.diffuse.a*lights[x].color.a,NdotL));
 			}
 			break;
 
-			case 4://spot
+			case SPOT://spot
 			//TODO: implement? For now just use point light implementation
-			case 3://point
+			case POINT://point
 			
 			vec3 v_surfaceToLight = vec3(0.,0.,0.);
 			if(tangentSpace)
@@ -183,16 +215,16 @@ sMat getStandardLight(vec4 mp5, vec3 norm, vec3 pos, vec3 viewPos, bool tangentS
 				if((diffuse>0.&&lights[x].negativeHandler==1)||(diffuse<0.&&lights[x].negativeHandler==2)||(lights[x].negativeHandler!=2&&lights[x].negativeHandler!=1)){
 					
 					switch(lights[x].negativeHandlerAlt){
-						case 1:
+						case CLAMP:
 						specular=max(dot(N, halfVector),0.);
 						break;
-						case 2:
+						case CLAMPNEGATIVE:
 						specular=min(dot(N, halfVector),0.);
 						break;
-						case 3:
+						case ABS:
 						specular=abs(dot(N, halfVector));
 						break;
-						case 0:default:
+						case NOCHANGE:default:
 						specular=dot(N, halfVector);
 					}
 					specular=pow(specular,lights[x].shininess*mp5.r);
@@ -201,51 +233,51 @@ sMat getStandardLight(vec4 mp5, vec3 norm, vec3 pos, vec3 viewPos, bool tangentS
 				vec4 tmpSpec=a*(specular*lights[x].color*lights[x].specularMultiply);
 
 				switch(lights[x].negativeHandler){
-					case 1:
+					case CLAMP:
 					r.diffuse=vec4(max(0.,tmpDiff.r)+r.diffuse.r,
 					max(0.,tmpDiff.g)+r.diffuse.g,
 					max(0.,tmpDiff.b)+r.diffuse.b,
 					mix(r.diffuse.a,lights[x].color.a*lights[x].diffuseMultiply.a*r.diffuse.a,max(0.,diffuse)));
 					
 					break;
-					case 2:
+					case CLAMPNEGATIVE:
 					r.diffuse=vec4(min(0.,tmpDiff.r)+r.diffuse.r,
 					min(0.,tmpDiff.g)+r.diffuse.g,
 					min(0.,tmpDiff.b)+r.diffuse.b,
 					mix(r.diffuse.a,lights[x].color.a*lights[x].diffuseMultiply.a*r.diffuse.a,min(0.,diffuse)));
 					
 					break;
-					case 3:
+					case ABS:
 					r.diffuse=vec4(abs(tmpDiff.r)+r.diffuse.r,
 					abs(tmpDiff.g)+r.diffuse.g,
 					abs(tmpDiff.b)+r.diffuse.b,
 					mix(r.diffuse.a,lights[x].color.a*lights[x].diffuseMultiply.a*r.diffuse.a,abs(diffuse)));
 					
-					case 0:default:
+					case NOCHANGE:default:
 					r.diffuse=vec4(tmpDiff.rgb+r.diffuse.rgb,mix(r.diffuse.a,lights[x].color.a*lights[x].diffuseMultiply.a*r.diffuse.a,diffuse));
 					
 				}
 
 				switch(lights[x].negativeHandlerAlt){
-					case 1:
+					case CLAMP:
 					r.specular=vec4(max(0.,tmpSpec.r)+r.specular.r,
 					max(0.,tmpSpec.g)+r.specular.g,
 					max(0.,tmpSpec.b)+r.specular.b,
 					mix(r.specular.a,lights[x].color.a*lights[x].specularMultiply.a*r.specular.a,max(0.,specular)));
 					break;
-					case 2:
+					case CLAMPNEGATIVE:
 					r.specular=vec4(min(0.,tmpSpec.r)+r.specular.r,
 					min(0.,tmpSpec.g)+r.specular.g,
 					min(0.,tmpSpec.b)+r.specular.b,
 					mix(r.specular.a,lights[x].color.a*lights[x].specularMultiply.a*r.specular.a,min(0.,specular)));
 					break;
-					case 3:
+					case ABS:
 					r.specular=vec4(abs(tmpSpec.r)+r.specular.r,
 					abs(tmpSpec.g)+r.specular.g,
 					abs(tmpSpec.b)+r.specular.b,
 					mix(r.specular.a,lights[x].color.a*lights[x].specularMultiply.a*r.specular.a,abs(specular)));
 					break;
-					case 0: default:
+					case NOCHANGE: default:
 					r.specular=vec4(tmpSpec.rgb+r.specular.rgb,mix(r.specular.a,lights[x].color.a*lights[x].specularMultiply.a*r.specular.a,specular));
 
 				}
@@ -300,72 +332,72 @@ vec4 standardImage(vec4 mp[MAT_PROP_COUNT], vec3 pos, vec2 tx, vec3 viewPos, boo
 
 void main(void){
 	fPosition = vec4(positionT, 1);
-	vec2 txc = (texCoord*vec2(matProp[6][0], matProp[6][1]))+vec2(matProp[6][2], matProp[6][3]);
+	vec2 txc = (texCoord*vec2(matProp[TXCSCLDISP][0], matProp[TXCSCLDISP][1]))+vec2(matProp[TXCSCLDISP][2], matProp[TXCSCLDISP][3]);
 	float d = 1.-texture(depthMap, txc).r;
 	//vec2 txc = texCoord;
-	switch(matIndex){
-		case -3: //debug- draw depth
+	switch(matFunc){
+		case DEBUG_DEPTH: //debug- draw depth
 		fScene = fDepth;
-		fColor = matProp[0]*matProp[3];
+		fColor = matProp[COLOR]*matProp[AMBMULT];
 		fNormal = vec4(normalT, 1);
-		fSpecular = matProp[2];
-		fDiffuse = matProp[1];
-		fEmissive = matProp[4];
+		fSpecular = matProp[SPECULAR];
+		fDiffuse = matProp[DIFFUSE];
+		fEmissive = matProp[EMISSIVE];
 		fDepth = gl_FragCoord;
 		break;
-		case -2: //debug- draw texcoord
+		case DEBUG_TEXCOORD: //debug- draw texcoord
 		fScene = vec4(txc, 0., 1.);
 		fNormal = vec4(normalT, 1);
-		fColor = matProp[0]*matProp[3];
-		fSpecular = matProp[2];
-		fDiffuse = matProp[1];
-		fEmissive = matProp[4];
+		fColor = matProp[COLOR]*matProp[AMBMULT];
+		fSpecular = matProp[SPECULAR];
+		fDiffuse = matProp[DIFFUSE];
+		fEmissive = matProp[EMISSIVE];
 		fDepth = gl_FragCoord;
 		break;
-		case -1: //nodraw. Doesn't even put anything into postprocess
+		case NODRAW: //nodraw. Doesn't even put anything into postprocess
 		return;
 
-		case 1: //no texture
+		case NOTEX: //no texture
 		fScene=standardMaterial(matProp, normalT, positionT, cameraPosT, true);
 		fNormal = vec4(normalT, 1);
 		fDepth = gl_FragCoord;
 		break;
 
-		case 2: //parallaxed texture
-		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[5][1], matProp[5][2], matProp[5][3]);
+		case PARALLAX: //parallaxed texture
+		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[SHINIPARA][1], matProp[SHINIPARA][2], matProp[SHINIPARA][3]);
 		fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
 		//break;
 
-		case 3: //texture, no parallax
+		case PBR: //texture, no parallax
 		fScene = standardImage(matProp, positionT, txc, cameraPosT, true);
-		if(matIndex == 3){
+		if(matFunc == 3){
 			fDepth = gl_FragCoord;
 		}
 		break;
 
-		case 4: //unlit texture, parallax
-		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[5][1], matProp[5][2], matProp[5][3]);
+		case UNLIT_PARALLAX: //unlit texture, parallax
+		txc = parallax(txc, -normalize((cameraPosT*vec3(1,1,1))-positionT)*vec3(1,1,-1), normalT, matProp[SHINIPARA][1], matProp[SHINIPARA][2], matProp[SHINIPARA][3]);
 		fDepth = vec4(gl_FragCoord.rgb-(vec3(d, d, d)), gl_FragCoord.a*texture(depthMap, txc).a);
 
-		case 5: //unlit texture, no parallax
-		fScene = texture(baseImage, txc) * matProp[0];
-		fColor = texture(baseImage, txc) * matProp[0]*matProp[3];
-		fSpecular = matProp[2];
-		fDiffuse = matProp[1];
-		fEmissive = matProp[4];
-		if(matIndex == 5){
+		case UNLIT_PBR: //unlit texture, no parallax
+		fScene = texture(baseImage, txc) * matProp[COLOR];
+		fColor = texture(baseImage, txc) * matProp[COLOR]*matProp[AMBMULT];
+		fSpecular = matProp[SPECULAR];
+		fDiffuse = matProp[DIFFUSE];
+		fEmissive = matProp[EMISSIVE];
+		if(matFunc == 5){
 			fNormal = vec4(normalT, 1);
 			fDepth = gl_FragCoord;
 		}
 		break;
 
-		case 0: default: //solid color no lighting
-		fScene=matProp[0];
+		case UNLIT_SOLID: default: //solid color no lighting
+		fScene=matProp[COLOR];
 		fNormal = vec4(normalT, 1);
-		fColor = matProp[0]*matProp[3];
-		fSpecular = matProp[2];
-		fDiffuse = matProp[1];
-		fEmissive = matProp[4];
+		fColor = matProp[COLOR]*matProp[AMBMULT];
+		fSpecular = matProp[SPECULAR];
+		fDiffuse = matProp[DIFFUSE];
+		fEmissive = matProp[EMISSIVE];
 		fDepth = gl_FragCoord;
 		break;
 	}

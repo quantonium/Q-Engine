@@ -6,7 +6,7 @@ import {eulerToQuat, right, addRotation, fastNorm} from "../engine/common/helper
 import { getMousePos } from "../engine/userInput.js";
 import { AmbientLight, PointLight, DirectionalLight } from "../engine/primitives/lights.js";
 import {Camera} from "../engine/primitives/camera.js"
-import { BasicMaterial, Material } from "../engine/material.js";
+import { BasicMaterial, Material, NoDraw } from "../engine/material.js";
 import { Object } from "../engine/primitives/object.js";
 import { getRect, getCylinder, getSphere, addToPointIndArr, mergePointArrs } from "../engine/geometry.js";
 import { BoundsType } from "../engine/bounds.js";
@@ -207,7 +207,7 @@ function init() {
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1,
 			1, 1, 1, 1, 1, 1], texCoords: tmp.texCoords, type: Q.gl().TRIANGLES, normals: tmp.normals, tangents: tmp.tangents, textureIndex: -1}]
-		, tmp.points, [new Material(), new Material(-1)], BoundsType.RECT)
+		, tmp.points, [new Material(), new NoDraw()], BoundsType.RECT)
 
 	//create some shapes that rotate
 	var cube = getRect(vec3(-10,0,0),vec3(1,1,1))

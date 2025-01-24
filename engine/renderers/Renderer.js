@@ -28,6 +28,8 @@ export class BufferSet {
 
 	_gl
 
+	_vao //renderer has a VAO which it enables by default, so that it doesn't override DrawInfo VAOs
+
 	constructor(locationName, gTarget, shaderProgram, type, size = 3) {
 		this.locationName = locationName;
 		this.type = type
@@ -163,62 +165,20 @@ export class Renderer {
 	_uniformMap = Map()
 	_structUniformMap = Map()
 
-	_matParams = []
-	_matIndicies = []
-	_points = []
-	_types = [];
-	_offsets = [];
-	_texCoords = []
-	_normals = []
-	_bitangents = [] //NOTE: default shader calculates bitangents
-	_tangents = []
-
-	_posBuffer;
-	_normBuf;
-	_txBuf;
-	_tanBuf;
-	_biTanBuf;
-	_matParamsBufs = [];
-	_matIndBuf;
-
-	_inMatIndex
-	_inMatParams = [];
-
-	_projMatrix;
-	_viewMatrix;
-	_normalMatrix;
-	_modelMatrix;
-	_lightTypeArrayLoc = [];
-	_lightLocArrayLoc = [];
-	_lightDirArrayLoc = [];
-	_lightAngleArrayLoc = [];
-	_lightColorArrayLoc = [];
-	_lightDiffArrayLoc = [];
-	_lightSpecArrayLoc = [];
-	_lightShinyArrayLoc = [];
-	_lightAttenArrayLoc = [];
-	_lightNegativeArrayLoc = [];
-	_lightAltNegativeArrayLoc = []
-	_lightIndLoc;
-	
-	_textureLoc = []
+	drawElements = false //if true, draw via wgl drawelement feature instead of drawarrays
+	drawInstanced = false //if true, shader takes in RENDERER_BUFFER_TYPES as attributes instead of uniforms,
+	//allowing for instanced drawing
 	
 
 	//Current 3D ShaderProgram that this buffer will use to render.
 	//Set to null to disable
+	//todo: maybe obsolete this variable
 	currentProgram = null;
-
-	//Current postprocess ShaderProgram that this buffer will use to render.
-	//Set to null to disable (will not output to display!)
-	postProcessProgram = null;
 
 	//the actual active program
 	_activeProgram = null;
 
 	_bufLimit;
-	_matParamCount = 0;
-	_texCount = 0;
-	_postTexCount = 0;
 
 	//buffer renders only objects that match this mask
 	bufferMask = 0x1;
@@ -228,15 +188,7 @@ export class Renderer {
 	//color which to clear to after rendering a frame
 	clearColor;
 
-	_outImages = [];
-	_postImageLoc = [];
-	_postIn = [];
-	_postPosBuf;
-	_outBuffer;
-	_depthBuffer;
 	_inSetup = false;
-
-	_drawBuffers = [];
 
 	//WEBGL EXTENSIONS
 	_FLOATING_EXT;
@@ -279,13 +231,14 @@ export class Renderer {
 	//@param buffers a list of strings of attribute values in the given program to create buffers for
 	_initProgram(shaderProgram, buffers = [], attributes = [], uniforms = []) {
 		this._inSetup = true
-		this._setupInfo.customSetupFunction(this._gTarget, this.getWGLProgram());
+		this.switchCurrentShaderPrograms(shaderProgram)
+		this._setupInfo.customSetupFunction(this._gTarget, shaderProgram);
 		this._setup = true
 		this._inSetup = false
 	}
 
 	_clearBuffers() {
-		this._customClearFunction(this._gTarget, this.currentProgram)
+		this._customClearFunction(this._gTarget, this.getActiveShaderProgram())
 		for (var i = 0; i < this._matParamCount; i++)
 			this._matParams[i] = []
 		this._matIndicies = []
@@ -296,45 +249,6 @@ export class Renderer {
 		this._normals = []
 		//this._bitangents = []
 		this._tangents = []
-	}
-
-	_updateLights() {
-		var x = -1
-		if (this._lightIndLoc.isValid) {
-			this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
-			getLights().forEach((l) => {
-				if (l != null && x < this.getActiveShaderProgram().maxLightCount - 1 && l._enabled && this._lightTypeArrayLoc.length - 1 > x && ((l._lightMask & this.bufferMask) != 0)) {
-					x++;
-					this._gTarget.uniform1iv(this._lightIndLoc.location, new Int32Array([x]))
-					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([l._type]))
-					switch (l._type) {
-						case 4:
-							this._gTarget.uniform1fv(this._lightAngleArrayLoc[x], new Float32Array([l._angle]))
-						case 3:
-							this._gTarget.uniform1fv(this._lightAttenArrayLoc[x], new Float32Array([l._attenuation]))
-							this._gTarget.uniform4fv(this._lightDiffArrayLoc[x], flatten(l._diffuseMultiply))
-							this._gTarget.uniform4fv(this._lightSpecArrayLoc[x], flatten(l._specularMultiply))
-							this._gTarget.uniform1fv(this._lightShinyArrayLoc[x], new Float32Array([l._shininess]))
-							this._gTarget.uniform1iv(this._lightAltNegativeArrayLoc[x], new Int32Array([l._handleNegativeAlt]))
-						case 2:
-							var t = l._getWorldTransform(true)
-							this._gTarget.uniform3fv(this._lightDirArrayLoc[x], flatten(forward(t.rot)))
-							this._gTarget.uniform3fv(this._lightLocArrayLoc[x], flatten(t.pos))
-						case 1:
-							this._gTarget.uniform4fv(this._lightColorArrayLoc[x], flatten(l._color));
-							break;
-
-					}
-					this._gTarget.uniform1iv(this._lightNegativeArrayLoc[x], new Int32Array([l._handleNegative]))
-				} else if (x >= this.getActiveShaderProgram().maxLightCount - 1 && l != null && l._enabled) {
-					bufferedConsoleLog("WARNING: More than " + this.getActiveShaderProgram().maxLightCount + " used, light with ID " + l._id + " will not be visible.")
-				} else if (l._lightMask & this.bufferMask == 0) {
-					this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
-				}
-			})
-			for (x++; x < this.getActiveShaderProgram().maxLightCount && x < this._lightTypeArrayLoc.length; x++)
-				this._gTarget.uniform1iv(this._lightTypeArrayLoc[x], new Int32Array([0]))
-		}
 	}
 
 	_loadMaterial(m, hasTexture = false, noLighting = false, noParallax = false) {

@@ -2,7 +2,7 @@
 
 precision highp float;
 
-in vec2 inPointsL;
+layout(location=0) in vec2 inPointsL;
 out vec2 texCoords;
 
 void main(void){

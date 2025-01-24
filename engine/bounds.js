@@ -81,6 +81,22 @@ export class Bounds {
 		}
 	}
 
+	//renders bounds to a given renderer
+	renderBounds(renderer) {
+		buf._types.push(buf._gTarget.LINE_LOOP);
+		var b = this.bounds.getGraphicsDrawBounds();
+		buf._offsets.push(b.points.length)
+		for (var i = 0; i < b.points.length; i++) {
+			buf._points.push(b.points[i])
+			var tmp = new SolidColorNoLighting(b.colors[i % b.colors.length]);
+			buf._loadMaterial(tmp, false, wireframe || noLighting)
+			buf._normals.push(vec3(1, 0, 0))//Bounds have no normals, this is just filler
+			buf._tangents.push(vec3(0, 1, 0))
+			buf._texCoords.push(vec2(0, 0)) //Bounds have no textures, again just filler
+			//buf_bitangents.push(vec3(0, 0, 1))
+		}
+	}
+
 	//defines points to draw _Bounds, manually
 	getDrawBounds(multMat = vec3(1, 1, 1)) {
 		var r = []

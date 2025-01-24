@@ -3,11 +3,152 @@
 import {Primitive} from "./primitive.js"
 import { SolidColorNoLighting } from "../material.js";
 import { newID} from "../common/helpers-and-types.js";
-import { vec2, vec3 } from "../common/MVnew.js";
+import { add, equal, vec2, vec3 } from "../common/MVnew.js";
 import { Bounds } from "../bounds.js";
 
+//DrawInfo contains a VAO which stores the necessary point and material info for a given set of traingles.
+//Each DrawInfo class maps a set of triangles to a material and a set of textures. Point positions are
+//mapped by index to _owner._points, and other point data is mapped per point.
+export class DrawInfo {
+	_vao
+	_gl
+	_buffers = Map()
 
+	useVAO = true //set to false if you'd rather update the buffers constantly- every time the object
+	//is drawn it will load data into the buffers.
+	//Otherwise, a VAO will be bound to draw and buffers should be updated only on occasion.
 
+	//index of material to use from _owner
+	materialIndex = 0
+
+	//_owner: must be the Object which this DrawInfo is stored under
+	_owner = null
+
+	//type: wgl draw type for this object, default GL_TRIANGLES
+	type = null
+
+	//arrays below are per point
+	pointIndexes = []
+	tangents = []
+	normals = []
+	texCoords = []
+
+	//map the material property index to a list of properties per triangle
+	//if null, use the material default
+	matProperties = []
+
+	getOwner() {
+		return _owner
+	}
+
+	constructor(gl) {
+		this._gl = gl
+		this._vao = gl.createVertexArray()
+		this.type = gl.TRIANGLES
+	}
+
+	//sets the owner, materialIndex, and sets up matProperties to the num of parameters in the material
+	//Use this function to change the materialIndex or the owner. Parameters are removed or added but not otherwise altered.
+	setup(owner, materialIndex){
+		this.materialIndex = materialIndex
+		this._owner = owner
+		if(owner.materials[materialIndex].parameters.length() < this.matProperties.length() )
+			this.matProperties.slice(owner.materials[materialIdex].parameters.length())
+		else {
+			for(i = this.matProperties.length(); i < owner.materials[materialIndex].parameters.length(); i++){
+				this.matProperties.push(null)
+			}
+		}
+	}
+
+	/** Updates this DrawInfo, binding the VAO and updating a point at an index
+	* @param index the point which to update
+	* @param newIndex if not negative, sets the point which this index references to the newIndex
+	* @param positionUpdated if true, the point's position (at index) was updated
+	* @param newTangent if not null, updates the tangent at this point to this value
+	* @param newTexCoord if not null, updates the tex coord at this point to the new value
+	* @param newMatProp map mapping property indexes to its updated value
+	**/
+	update(index, newIndex=-1, positionUpdated = false, newNormal=null, newTangent=null, newTexCoord=null, newMatProp=new Map()){
+		index = index % this.pointIndexes.length()
+		let updated = positionUpdated
+		if(newIndex >= 0){
+			updated = true
+			this.pointIndexes[index] = newIndex
+		}
+		if(newNormal != null){
+			updated=true
+			this.normals[index] = newNormal
+		}
+		if(newTangent != null){
+			updated=true
+			this.tangents[index] = newTangent
+		}
+
+		if(newTexCoord != null){
+			updated = true
+			this.texCoords[index] = newTexCoord
+		}
+
+		newMatProp.keys().forEach(element => {
+			updated = true
+			this.matProperties[index][element] = newMatProp.get(element)
+		});
+
+		if(updated){
+			this._reloadBuffers()
+		}
+
+	}
+
+	//reloads data into the buffers for this DrawInfo
+	_reloadBuffers() {
+
+	}
+
+	//Load this DrawInfo into the specified renderer, enabling the VAO and loading textures
+	load(renderer){
+
+	}
+
+	//adds the pointIndex into this DrawInfo at the specified index
+	addPoint(index, pointIndex){
+		index = index % this.pointIndexes.length
+		this.pointIndexes.splice(index, 0, pointIndex)
+		this._owner._addPointFromDrawInfo(this, pointIndex)
+		return pointIndex
+	}
+
+	//updates the point at index to the new pointIndex
+	updatePoint(index, pointIndex){
+		index = index % this.pointIndexes.length
+		this._owner._removePointFromDrawInfo(this, this.pointIndexes[index])
+		let oldPoint = this.pointIndexes[index]
+		this.pointIndexes[index] = pointIndex
+		this._owner._addPointFromDrawInfo(this, pointIndex)
+		return oldPoint
+	}
+
+	//removes the point at the index
+	//returns the pointIndex of the removed item
+	removePointAtIndex(index){
+		index = index % this.pointIndexes.length
+		this._owner._removePointFromDrawInfo(this, this.pointIndexes[index])
+		return this.pointIndexes.splice(index, 1)
+	}
+
+	//removes the point by value
+	//returns pointIndex
+	removePoint(pointIndex){
+		for(i=this.pointIndexes.length()-1; i >= 0; i--){
+			if(this.pointIndexes[i] == pointIndex){
+				this.pointIndexes.splice(i, 1)
+			}
+		}
+		this._owner._removePointFromDrawInfo(this, this.pointIndexes[index])
+		return pointIndex
+	}
+}
 
 /**
  * 3D _Primitive containing material data, coordinate data, and Bounds
@@ -16,21 +157,24 @@ import { Bounds } from "../bounds.js";
 export class Object extends Primitive {
 	static _objects = new Map();
 
-	//Indicates what materials to render to which face
+	//drawInfo contains info about what material should be applied to which set of points in an object.
 	drawInfo = []
 
-	//Points which create this object
-	pointInfo = []
+	//the positions of all the points
+	points = []
+
+	//map index of point in points to set of drawInfo which uses this point
+	_drawInfoPointRefs = new Map()
 
 	//If true, this object is engine only, meaning it cannot interact with non-engine objects,
 	//and can only be rendered if a camera is set to render engine only objects
 	isEngine = false
 
 	//Contains Materials required to render this object
-	matInfo = []
+	materials = []
 
 	//Contains ComplexTextures necessary for materials in this object
-	textureInfo = []
+	textures = []
 
 	//Set to false to hide the object
 	_visible = []
@@ -49,36 +193,128 @@ export class Object extends Primitive {
 	}
 
 	/**To be called whenever individual points are adjusted */
-	reevaluateBounds(pointInfo, boundsType) {
-		this.bounds = new Bounds(pointInfo, boundsType);
+	reevaluateBounds(points, boundsType) {
+		this.bounds = new Bounds(points, boundsType);
 	}
 
 	/**To be called whenever individual points are adjusted. Updates float32arrays  */
 	/**
 	 * 
 	 * @param {transform} startTransform
-	 * @param {drawInfo} drawInfo array of [{pointIndex[], matIndex[], texCoords[], type}]
+	 * @param {drawInfo} drawInfo array of DrawInfo objects
 	 * @param {enum} drawType 
 	 */
-	constructor(startTransform, drawInfo, pointInfo, matInfo, boundsType, textureInfo = [], isEngine = false, visible = true) {
+	constructor(startTransform, drawInfo, points, materials, boundsType, textures = [], isEngine = false, visible = true) {
 		//if(startTransform.rot.length != 4) throw "Rotations must be quaternions!"
 		super(startTransform)
 		this._id = newID();
 		this.drawInfo = drawInfo;
-		this.pointInfo = pointInfo;
-		this.reevaluateBounds(pointInfo, boundsType)
+		this._points = points;
+		this.reevaluateBounds(points, boundsType)
 		this.isEngine = isEngine
-		this.matInfo = matInfo
-		this.textureInfo = textureInfo
+		this.materials = materials
+		this.textures = textures
 		this.visible = visible
 		Object._objects.set(this._id, this)
 	}
 
+	//retrieves the relative location of a point at index
+	getPoint(index) {
+		return this._points[index]
+	}
+
+	//updates the relative location of a point at index
+	updatePoint(index, newVal) {
+		let oldval = this._points[index]
+		if(!equal(oldval, newVal)){
+			this._points[index] = newVal
+			this._drawInfoPointRefs.get(index).forEach((element) => {
+				element._reloadBuffers()
+			})
+		}
+	}
+
+	//adds a set of points to the list of points for this object, and returns an array of the indexes of the new points
+	//points will fill the space of previously removed points
+	addPoints(newPoints = []){
+		let ret = []
+		let addInd = 0
+		let addAtEnd = false
+		let ind = 0
+		for(i = 0; i < newPoints.length(); i++){
+			if(!addAtEnd){
+				while(addInd < this._points.length() && this._points[addInd] != null) addInd++
+				if(addInd < this._points.length()){
+					ind = addInd
+					this._points[ind] = newPoints[i]
+				}
+				else {
+					addAtEnd = true
+				}
+			}
+			if(addAtEnd){
+				ind = this._points.length()
+				this._points.push(newPoints[i])
+			}
+			ret.push(ind)
+			this._drawInfoPointRefs.set(ind, new Set())
+		}
+		return ret
+	}
+
+	//called from DrawInfo when a point is added
+	_addPointFromDrawInfo(drawInfo, index){
+		this._drawInfoPointRefs.get(index).add(drawInfo)
+	}
+
+	//called from DrawInfo when a point is removed
+	//does not remove the point from the object entirely
+	_removePointFromDrawInfo(drawInfo, index){
+
+		let s = this._drawInfoPointRefs.get(index)
+		if(s.has(drawInfo)) {
+			s.delete(drawInfo)
+		}
+	}
+
+	//removes points by index, removing any corresponding refs to this point in any DrawInfo.
+	//Todo: handle removing a point from a TRIANGLE vs a LINE or what not differently
+	removePoint(index){
+		let drawInfosToRemoveFrom = this._drawInfoPointRefs.get(index)
+
+		drawInfosToRemoveFrom.forEach ((element) => {
+			element.removePoint(index)
+		})
+
+		this._drawInfoPointRefs.delete(index)
+		this._points
+	}
+
+	//given a set of indexes for points, creates a new DrawInfo for this object, returning the drawinfo object
+	//note: add any new points before you add a DrawInfo
+	addDrawInfo(gl, pointIndexes = [], materialIndex = 0, normals = [], tangents = [], texCoords = [], matProps = new Map(), useVAO = true) {
+		let newInfo = new DrawInfo(gl)
+		newInfo._owner = this
+		newInfo.pointIndexes = pointIndexes
+		newInfo.materialIndex = materialIndex
+		newInfo.normals = normals
+		newInfo.tangents = tangents
+		newInfo.texCoords = texCoords
+		newInfo.matProperties = matProps
+		newInfo.useVAO = useVAO
+		this.drawInfo.push(newInfo)
+		pointIndexes.forEach((element) => {
+			this._drawInfoPointRefs.get(element).add(newInfo)
+		})
+		return newInfo
+	}
+
+
 
 	/**
-	 * Feeds buf with necessary graphics data to render this object
+	 * Feeds renderer with necessary graphics data to render this object
 	 */
-	_setGraphicsData(buf, camera) {
+	_setGraphicsData(renderer, showBounds = false, wireframe = false, noLighting = false) {
 
 		//mat4 generates matrix by cols, then rows
 		//equation from Wikipedia
@@ -87,60 +323,10 @@ export class Object extends Primitive {
 		var b = this.bounds.getGraphicsDrawBounds()
 
 		buf._setModelMatrix(newMat)
-		for (var g = 0; g < this.drawInfo.length; g++) {
-			var d = this.drawInfo[g]
-			var i = d.pointIndex
 
-			if (i.length > buf._bufLimit)
-				console.error("Unable to load data to GPU. Too many points. Length: " + i.length + "; Object: " + o);
-			else {
-
-				if (((i.length + buf._points.length > buf._bufLimit) || d.textureIndex != -1) && camera.render)
-					buf._renderData();
-
-				buf._offsets.push(i.length)
-				
-				buf._types.push(camera.wireframe ? buf._gTarget.LINE_LOOP : d.type)
-
-				if (d.textureIndex != -1)
-					buf._loadTexture(this.textureInfo[d.textureIndex], camera.cameraMask)
-
-				buf._texCoords = d.texCoords
-				for (var ii = 0; ii < i.length; ii++) {
-					buf._loadMaterial(this.matInfo[d.matIndex[ii % d.matIndex.length]], d.textureIndex != -1 && !camera.noTexture, camera.wireframe || camera.noLighting, camera.noParallax)
-					buf._points.push(this.pointInfo[i[ii]])
-					switch (d.type) {
-						case buf._gTarget.TRIANGLES:
-							buf._normals.push(d.normals[Math.floor(ii / 3)]) //push 3 for each vert
-							buf._tangents.push(d.tangents[Math.floor(ii / 3)]) //push 3 for each vert
-							break;
-						default:
-							buf._normals.push(d.normals[ii])
-							buf._tangents.push(d.tangents[ii])
-
-					}
-					//buf._texCoords.push(d.texCoords[ii])
-				}
-
-				if ((d.textureIndex != -1 || camera.showNormalTangents) && camera.render)
-					buf._renderData();
-			}
-		}
-		if (camera.showBounds && !this.isEngine) {
-			if (camera.render)
-				buf._renderData();
-			buf._types.push(buf._gTarget.LINE_LOOP);
-			var b = this.bounds.getGraphicsDrawBounds();
-			buf._offsets.push(b.points.length)
-			for (var i = 0; i < b.points.length; i++) {
-				buf._points.push(b.points[i])
-				var tmp = new SolidColorNoLighting(b.colors[i % b.colors.length]);
-				buf._loadMaterial(tmp, false, camera.wireframe || camera.noLighting)
-				buf._normals.push(vec3(1, 0, 0))//Bounds have no normals, this is just filler
-				buf._tangents.push(vec3(0, 1, 0))
-				buf._texCoords.push(vec2(0, 0)) //Bounds have no textures, again just filler
-				//buf_bitangents.push(vec3(0, 0, 1))
-			}
+		//loading bounds to wgl if enabled
+		if (showBounds && !this.isEngine) {
+			
 		} //camera will take care of final _renderData for this object
 	}
 
