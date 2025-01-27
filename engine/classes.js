@@ -325,9 +325,12 @@ class _Object extends _Primitive {
 				if (d.textureIndex != -1)
 					buf._loadTexture(this._textureInfo[d.textureIndex], camera._cameraMask)
 
-				buf._texCoords = d.texCoords
+				//buf._texCoords = d.texCoords
 				//buf._texCoords.push(d.texCoords)
+
+				//iterating over every vertex
 				for (var ii = 0; ii < i.length; ii++) {
+					buf._texCoords.push(d.texCoords[ii])
 					buf._loadMaterial(this._matInfo[d.matIndex[ii % d.matIndex.length]], d.textureIndex != -1 && !camera._noTexture, camera._wireframe || camera._noLighting, camera._noParallax)
 					buf._points.push(this._pointInfo[i[ii]])
 					switch (d.type) {
