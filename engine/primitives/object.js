@@ -33,9 +33,7 @@ export class DrawInfo {
 	normals = []
 	texCoords = []
 
-	//map the material property index to a list of properties per triangle
-	//if null, use the material default
-	matProperties = []
+	_buffersOutdated = true
 
 	getOwner() {
 		return _owner
@@ -52,26 +50,23 @@ export class DrawInfo {
 	setup(owner, materialIndex){
 		this.materialIndex = materialIndex
 		this._owner = owner
-		if(owner.materials[materialIndex].parameters.length() < this.matProperties.length() )
-			this.matProperties.slice(owner.materials[materialIdex].parameters.length())
-		else {
-			for(i = this.matProperties.length(); i < owner.materials[materialIndex].parameters.length(); i++){
-				this.matProperties.push(null)
-			}
-		}
 	}
 
 	/** Updates this DrawInfo, binding the VAO and updating a point at an index
 	* @param index the point which to update
 	* @param newIndex if not negative, sets the point which this index references to the newIndex
-	* @param positionUpdated if true, the point's position (at index) was updated
+	* @param positionUpdated updates the position of the point at index (before updating to newIndex) if set
 	* @param newTangent if not null, updates the tangent at this point to this value
 	* @param newTexCoord if not null, updates the tex coord at this point to the new value
 	* @param newMatProp map mapping property indexes to its updated value
 	**/
-	update(index, newIndex=-1, positionUpdated = false, newNormal=null, newTangent=null, newTexCoord=null, newMatProp=new Map()){
+	update(index, newIndex=-1, newPosition = null, newNormal=null, newTangent=null, newTexCoord=null){
 		index = index % this.pointIndexes.length()
-		let updated = positionUpdated
+		let updated = false
+		if(newPosition != null){
+			this.points[index] = newPosition
+			updated = true
+		}
 		if(newIndex >= 0){
 			updated = true
 			this.pointIndexes[index] = newIndex
@@ -96,19 +91,24 @@ export class DrawInfo {
 		});
 
 		if(updated){
-			this._reloadBuffers()
+			this._buffersOutdated = true
 		}
 
 	}
 
 	//reloads data into the buffers for this DrawInfo
 	_reloadBuffers() {
+		this._gl.bindVertexArray(this._vao)
 
+		this._buffersOutdated = false
 	}
 
 	//Load this DrawInfo into the specified renderer, enabling the VAO and loading textures
-	load(renderer){
-
+	render(renderer){
+		if(!this.useVAO || this._buffersOutdated) {
+			this._reloadBuffers()
+		}
+		this._gl.bindVertexArray(this._vao)
 	}
 
 	//adds the pointIndex into this DrawInfo at the specified index

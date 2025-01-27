@@ -5,20 +5,21 @@ precision highp float;
 const int LIGHT_COUNT=16;
 const int MAT_PROP_COUNT=7;
 
+//important: for VAOs to work the locations must be consistent between different shaders!
 layout(location=0) in vec3 inPointsL;
-in vec3 inNormalL;
-in vec2 inTexCoord;
-in vec3 inTangentL;
+layout(location=1) in vec3 inNormalL;
+layout(location=2) in vec2 inTexCoord;
+layout(location=3) in vec3 inTangentL;
 //in vec3 inBiTangent;
 //attribute vec3 inNormal;
-in int inMatFunc;
-in vec4 inMatProp0;//screw GLSL ES not supporting in attribute arrays
-in vec4 inMatProp1;
-in vec4 inMatProp2;
-in vec4 inMatProp3;
-in vec4 inMatProp4;
-in vec4 inMatProp5;
-in vec4 inMatProp6;
+layout(location=4) in int inMatFunc;
+layout(location=5) in vec4 inMatProp0;//screw GLSL ES not supporting in attribute arrays
+layout(location=6) in vec4 inMatProp1;
+layout(location=7) in vec4 inMatProp2;
+layout(location=8) in vec4 inMatProp3;
+layout(location=9) in vec4 inMatProp4;
+layout(location=10) in vec4 inMatProp5;
+layout(location=11) in vec4 inMatProp6;
 
 uniform vec3 inCameraScale;
 uniform mat4 viewMatrix;

@@ -11,9 +11,13 @@ import { vec4, vec3, vec2 } from "./common/MVnew.js";
 import { eulerToQuat } from "./common/helpers-and-types.js";
 import { BoundsType } from "./bounds.js";
 import { _bufferedConsoleTick } from "./console.js";
+import { ShaderProgramStorage } from "./shaderProgramStorage.js";
 
 
 export class Engine {
+
+	//maps wgl context to the corresponding engine
+	static engines = new Map()
 
 	//if true, sets the viewport size to the canvas size every tick, in case the html element is resized
 	setViewportSizeToCanvasSize = true;
@@ -39,6 +43,7 @@ export class Engine {
 	////DEFAULT RENDERING ELEMENTS
 	_gl;
 	_bData;
+	shaderStorage
 
 	//a reference to the canvas which the engine will render to
 	canvas;
@@ -125,8 +130,7 @@ export class Engine {
 
 	_setDefaultGraphics(vertexPath, fragmentPath, postVertexPath, postFragmentPath) {
 		//  Load shaders and initialize attribute buffers
-		this._defaultProgram = new ShaderProgram(this._gl, vertexPath, fragmentPath);
-		this._postProcessProgram = new ShaderProgram(this._gl, postVertexPath, postFragmentPath);
+		
 
 		this._bData = new ScreenBuffer(this._gl, this._defaultProgram, this._postProcessProgram, new vec2(this.canvas.width, this.canvas.height));
 
@@ -138,7 +142,7 @@ export class Engine {
 			tangents: [vec3(0, 1, 0), vec3(0, -1, 0), vec3(0, 0, 1), vec3(0, 0, -1), vec3(1, 0, 0), vec3(-1, 0, 0)], textureIndex: -1, bufferMask: 0x1, cameraMask: 0x1, lightMask: 0x1
 		}],
 			[vec3(-1000000, 0, 0), vec3(1000000, 0, 0), vec3(0, -1000000, 0), vec3(0, 1000000, 0), vec3(0, 0, -1000000), vec3(0, 0, 1000000)],
-			[new SolidColorNoLighting(vec4(1, 0, 0, 1)), new SolidColorNoLighting(vec4(0, 1, 0, 1)), new SolidColorNoLighting(vec4(0, 0, 1, 1))], BoundsType.RECT, [], true)
+			[new SolidColorNoLighting(this.shaderStorage, vec4(1, 0, 0, 1)), new SolidColorNoLighting(this.shaderStorage, vec4(0, 1, 0, 1)), new SolidColorNoLighting(this.shaderStorage, vec4(0, 0, 1, 1))], BoundsType.RECT, [], true)
 	}
 
 	async _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, postVertex, postFragment) {
@@ -161,9 +165,13 @@ export class Engine {
 				_render();
 			}, false);*/
 			this._gl = this.canvas.getContext('webgl2');
+			
 			if (!this._gl) {
 				reject("WebGL 2.0 isn't available").bind(this);
 			}
+			Engine.engines.set(this._gl, this)
+			this.shaderStorage = new ShaderProgramStorage(this._gl, vertexPath, fragmentPath)
+			this.shaderStorage.addProgram(postVertexPath, postFragmentPath)
 			var warn = "";
 			this._setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
 			resolve().bind(this);
@@ -191,7 +199,12 @@ export class Engine {
 
 			})
 			.catch((err) => { alert(err); console.error(err); })
+	}
 
+	//shuts down an engine, cleaning up its shaderprogramstorage object
+	shutdown(){
+
+		Engine.engines.delete(this)
 	}
 }
 

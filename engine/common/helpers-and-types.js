@@ -378,3 +378,45 @@ export function loadFileAJAX(name) {
 	xhr.send(null);
 return xhr.status == okStatus ? xhr.responseText : null;
 };
+
+
+//simple priority queue, used primarily for sorting materials in rendering order
+
+export class PQueue{
+	values = []
+
+	//returns [priority, value]
+	get(index){
+		return this.values.at(index)
+	}
+
+	//returns the index which the item was inserted into
+	set(priority, value){
+		
+		let check = true
+		let min = 0, max = values.length()
+		let test = ((max-min)/2)+min
+		while(check){
+			test = ((max-min)/2)+min
+			if(values[test][0] < priority){
+				min = test+1
+			}
+			else if(values[test][0] > priority){
+				max = test
+			}
+			else {
+				check = false
+			}
+			if(max == min) check = false
+		}
+		this.values.splice(test, 0, [priority, value])
+		return test
+	}
+
+	//returns the removed item
+	removeAt(index){
+		let ret = values[index]
+		this.values.splice(index, 1)
+		return ret
+	}
+}
