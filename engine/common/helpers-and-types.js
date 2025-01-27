@@ -276,11 +276,11 @@ export function getMidpoint(points) {
  * Returns a 4-vector representation of a plane- (x, y, z, b)
  * @param {*} points 3 points
  */
-export function getPlane(points, normFunction = normalize) {
+export function getPlane(points) {
 	if (points.length == 3) {
 		var cp = cross(subtract(points[2], points[0]),subtract(points[1], points[0]))
 		var d = dot(cp, points[2])
-		return normFunction(vec4(cp[0], cp[1], cp[2], d))
+		return vec4(cp[0], cp[1], cp[2], d)
 	}
 	throw "Can only get plane intersecting 3 points."
 }
