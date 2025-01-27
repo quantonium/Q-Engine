@@ -104,7 +104,7 @@ async function _initDefaultGraphics(defaultCanvas, vertexPath, fragmentPath, pos
 		_FLOATING_BUF_EXT = _gl.getExtension("EXT_color_buffer_float");
 		if (!_FLOATING_BUF_EXT) console.warn("Floating point buffers unsupported! Postprocess buffers might have undesired effects!");
 		_FLOATING_BLEND_EXT = _gl.getExtension("EXT_float_blend");
-		if (!_FLOATING_EXT) console.warn("Floating blend unsupported! Shaders might have undesired effects!");
+		if (!_FLOATING_BLEND_EXT) console.warn("Floating blend unsupported! Shaders might have undesired effects!");
 		_setDefaultGraphics(vertexPath, fragmentPath, postVertex, postFragment);
 		resolve();
 	});
